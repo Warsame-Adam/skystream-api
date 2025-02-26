@@ -1,11 +1,25 @@
-import {Schema, model, Document} from "mongoose";
+import { Schema, model } from "mongoose";
 
 const flightSchema = new Schema(
   {
-    airline: {
+    image: {
       type: String,
-      required: [true, "Airline is required"],
-      trim: true,
+    },
+    outboundAirline: {
+      type: Schema.Types.ObjectId,
+      ref: "FLIGHTS",
+      required: [true, "Outbound Airline is Required"],
+    },
+    twoWay: {
+      type: Boolean,
+      default: true,
+    },
+    returnAirline: {
+      type: Schema.Types.ObjectId,
+      ref: "FLIGHTS",
+      required: function () {
+        return this.twoWay === true, "Return Airline is Required";
+      },
     },
     flightNumber: {
       type: String,
@@ -13,15 +27,104 @@ const flightSchema = new Schema(
       unique: true,
       trim: true,
     },
-    departureCity: {
-      type: String,
-      required: [true, "Departure city is required"],
-      trim: true,
-    },
-    arrivalCity: {
-      type: String,
-      required: [true, "Arrival city is required"],
-      trim: true,
+    location: {
+      outboundDirect: {
+        type: Boolean,
+        default: true,
+      },
+      outboundStops: {
+        type: [
+          {
+            stopAtCountry: {
+              type: String,
+              required: true, //country code
+              trim: true,
+            },
+            stopAtCity: {
+              type: String,
+              required: true, //city code
+              trim: true,
+            },
+            stopAtAirport: {
+              type: String,
+              required: true, //city code
+              trim: true,
+            },
+          },
+        ],
+        required: function () {
+          return (
+            this.location.outboundDirect === false,
+            "Stops are required if Outbound fligh is not direct"
+          );
+        },
+      },
+      returnDirect: {
+        type: Boolean,
+        required: function () {
+          return (
+            this.twoWay === true,
+            "Flight will Return Directly(No Stop). Return Direct is Required"
+          );
+        },
+      },
+      returnStops: {
+        type: [
+          {
+            stopAtCountry: {
+              type: String,
+              required: true, //country code
+              trim: true,
+            },
+            stopAtCity: {
+              type: String,
+              required: true, //city code
+              trim: true,
+            },
+            stopAtAirport: {
+              type: String,
+              required: true, //city code
+              trim: true,
+            },
+          },
+        ],
+        required: function () {
+          return (
+            this.twoWay === true && this.location.returnDirect === false,
+            "Stops are required if Return fligh is not direct"
+          );
+        },
+      },
+      departureCountry: {
+        type: String,
+        required: [true, "Departure Country is required"], //country code
+        trim: true,
+      },
+      departureCity: {
+        type: String,
+        required: [true, "Departure city is required"], //city code
+        trim: true,
+      },
+      departureAirport: {
+        type: String,
+        required: [true, "Departure City Airport name is required"], //city code
+        trim: true,
+      },
+      arrivalCountry: {
+        type: String,
+        required: [true, "Arrival Country is required"], //country code
+        trim: true,
+      },
+      arrivalCity: {
+        type: String,
+        required: [true, "Arrival city is required"],
+        trim: true,
+      },
+      arrivalCityAirport: {
+        type: String,
+        required: [true, "Arrival City Airport name is required"], //city code
+        trim: true,
+      },
     },
     schedule: {
       departureTime: {
@@ -31,6 +134,18 @@ const flightSchema = new Schema(
       arrivalTime: {
         type: String,
         required: [true, "Arrival time is required"],
+      },
+      returnDepartureTime: {
+        type: String,
+        required: function () {
+          return this.twoWay === true, "Return Departure time is required";
+        },
+      },
+      returnArrivalTime: {
+        type: String,
+        required: function () {
+          return this.twoWay === true, "Return Arrival time is required";
+        },
       },
     },
     frequency: {
@@ -55,9 +170,9 @@ const flightSchema = new Schema(
         },
       },
     ],
-    duration: {
-      type: String,
-      required: [true, "Duration is required"], // Example: "2h 30m"
+    selfTransfer: {
+      type: Boolean,
+      default: false,
     },
     additionalInfo: {
       type: String,
