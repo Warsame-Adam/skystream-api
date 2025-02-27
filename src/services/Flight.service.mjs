@@ -1,21 +1,78 @@
 import FlightModel from "../models/Flight.model.mjs";
 
-// * ADD A NEW FLIGHT
-async function addFlight(req, res) {
+async function deleteFlight(req, res) {
   try {
-    const flightData = req.body;
-
-    // CREATE AND SAVE NEW FLIGHT INSTANCE
-    const newFlight = await FlightModel.create(flightData);
-
-    // SEND RESPONSE WITH FLIGHT DATA
-    return res.status(201).json(newFlight);
+    const doc = await FlightModel.findByIdAndDelete(req.params.id);
+    if (!doc) {
+      return res
+        .status(500)
+        .json({ success: false, error: "Requested Flight not deleted" });
+    }
+    res.status(204).json({
+      success: true,
+      data: "deleted Successfully",
+    });
   } catch (error) {
-    console.error("ERROR ADDING FLIGHT:", error);
-    return res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    console.error("ERROR deleting Flight:", error);
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 
+// * ADD A NEW FLIGHT
+async function addFlight(req, res) {
+  try {
+    let flightData = req.body;
+    if (req.file.filname) flightData.image = req.file.filename;
+    // CREATE AND SAVE NEW FLIGHT INSTANCE
+    const doc = await FlightModel.create(flightData);
+    if (!doc)
+      return res
+        .status(500)
+        .json({ success: false, error: "Requested Flight not created" });
+
+    // SEND RESPONSE WITH FLIGHT DATA
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc,
+      },
+    });
+  } catch (error) {
+    console.error("ERROR ADDING FLIGHT:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "INTERNAL SERVER ERROR" });
+  }
+}
+
+async function updateFlight(req, res) {
+  try {
+    let flightData = req.body;
+    if (req.file.filname) flightData.image = req.file.filename;
+
+    const doc = await FlightModel.findByIdAndUpdate(req.params.id, flightData, {
+      new: true,
+      runValidators: true,
+    });
+    if (!doc) {
+      return res
+        .status(500)
+        .json({ success: false, error: "Requested Flight not updated" });
+    }
+    // SEND RESPONSE WITH FLIGHT DATA
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc,
+      },
+    });
+  } catch (error) {
+    console.error("ERROR ADDING FLIGHT:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "INTERNAL SERVER ERROR" });
+  }
+}
 // * GET ALL FLIGHTS
 async function getAllFlights(_, res) {
   try {
@@ -23,10 +80,15 @@ async function getAllFlights(_, res) {
     const flights = await FlightModel.find();
 
     // SEND RESPONSE WITH FLIGHTS DATA
-    return res.status(200).json(flights);
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc: flights,
+      },
+    });
   } catch (error) {
     console.error("ERROR FETCHING FLIGHTS:", error);
-    return res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    return res.status(500).json({ error: "INTERNAL SERVER ERROR" });
   }
 }
 
@@ -39,43 +101,52 @@ async function getFlightById(req, res) {
     const flight = await FlightModel.findById(flightId);
 
     if (!flight) {
-      return res.status(404).json({error: "FLIGHT NOT FOUND"});
+      return res.status(404).json({ error: "FLIGHT NOT FOUND" });
     }
 
     // SEND RESPONSE WITH FLIGHT DATA
     return res.status(200).json(flight);
   } catch (error) {
     console.error("ERROR FETCHING FLIGHT:", error);
-    return res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    return res.status(500).json({ error: "INTERNAL SERVER ERROR" });
   }
 }
 
 // * GET FLIGHTS BY SEARCH (WITH FILTERS)
 async function getFlightsBySearch(req, res) {
   try {
-    const {departureCity, arrivalCity, airline, flightNumber, frequency, schedule, classes, duration} = req.query;
+    const {
+      departureCity,
+      arrivalCity,
+      airline,
+      flightNumber,
+      frequency,
+      schedule,
+      classes,
+      duration,
+    } = req.query;
 
     const filters = {};
 
     // APPLY FILTERS DYNAMICALLY
     if (departureCity) {
-      filters.departureCity = {$regex: departureCity, $options: "i"};
+      filters.departureCity = { $regex: departureCity, $options: "i" };
     }
 
     if (arrivalCity) {
-      filters.arrivalCity = {$regex: arrivalCity, $options: "i"};
+      filters.arrivalCity = { $regex: arrivalCity, $options: "i" };
     }
 
     if (airline) {
-      filters.airline = {$regex: airline, $options: "i"};
+      filters.airline = { $regex: airline, $options: "i" };
     }
 
     if (flightNumber) {
-      filters.flightNumber = {$regex: flightNumber, $options: "i"};
+      filters.flightNumber = { $regex: flightNumber, $options: "i" };
     }
 
     if (frequency) {
-      filters.frequency = {$in: frequency}; // Match any of the specified days
+      filters.frequency = { $in: frequency }; // Match any of the specified days
     }
 
     if (schedule?.departureTime || schedule?.arrivalTime) {
@@ -93,7 +164,7 @@ async function getFlightsBySearch(req, res) {
     }
 
     if (classes?.length) {
-      filters.classes = {$elemMatch: {}};
+      filters.classes = { $elemMatch: {} };
       classes.forEach((cls) => {
         if (cls.classType) {
           filters.classes.$elemMatch.classType = cls.classType;
@@ -108,7 +179,7 @@ async function getFlightsBySearch(req, res) {
     }
 
     if (duration) {
-      filters.duration = {$regex: duration, $options: "i"};
+      filters.duration = { $regex: duration, $options: "i" };
     }
 
     // FETCH FLIGHTS MATCHING THE FILTERS
@@ -118,11 +189,13 @@ async function getFlightsBySearch(req, res) {
     return res.status(200).json(flights);
   } catch (error) {
     console.error("ERROR FETCHING FLIGHTS BY SEARCH:", error);
-    return res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    return res.status(500).json({ error: "INTERNAL SERVER ERROR" });
   }
 }
 
 const FlightService = {
+  deleteFlight,
+  updateFlight,
   addFlight,
   getAllFlights,
   getFlightById,
