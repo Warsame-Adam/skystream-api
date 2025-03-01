@@ -19,7 +19,9 @@ async function deleteClassType(req, res) {
     }
     res.status(204).json({
       success: true,
-      data: "deleted Successfully",
+      data: {
+        message: "deleted Successfully",
+      },
     });
   } catch (error) {
     console.error("ERROR deleting Class Type:", error);

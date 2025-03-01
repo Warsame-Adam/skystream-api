@@ -13,7 +13,9 @@ async function deleteFlight(req, res) {
     }
     res.status(204).json({
       success: true,
-      data: "deleted Successfully",
+      data: {
+        message: "Deleted Successfully",
+      },
     });
   } catch (error) {
     console.error("ERROR deleting Flight:", error);
@@ -91,7 +93,9 @@ async function getAllFlights(_, res) {
     });
   } catch (error) {
     console.error("ERROR FETCHING FLIGHTS:", error);
-    return res.status(500).json({ error: "INTERNAL SERVER ERROR" });
+    return res
+      .status(500)
+      .json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 
@@ -101,17 +105,24 @@ async function getFlightById(req, res) {
     const flightId = req.params.id;
 
     // FETCH FLIGHT BY ID
-    const flight = await FlightModel.findById(flightId);
+    const doc = await FlightModel.findById(flightId);
 
-    if (!flight) {
+    if (!doc) {
       return res.status(404).json({ error: "FLIGHT NOT FOUND" });
     }
 
     // SEND RESPONSE WITH FLIGHT DATA
-    return res.status(200).json(flight);
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc,
+      },
+    });
   } catch (error) {
     console.error("ERROR FETCHING FLIGHT:", error);
-    return res.status(500).json({ error: "INTERNAL SERVER ERROR" });
+    return res
+      .status(500)
+      .json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 
@@ -130,7 +141,6 @@ async function getFlightsBySearch(req, res) {
       departureTime,
       arrivalTime,
       classes,
-      duration,
     } = req.query;
 
     const filters = {};
@@ -251,10 +261,17 @@ async function getFlightsBySearch(req, res) {
     );
 
     // SEND RESPONSE WITH FILTERED FLIGHTS
-    return res.status(200).json(flights);
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc: flights,
+      },
+    });
   } catch (error) {
     console.error("ERROR FETCHING FLIGHTS BY SEARCH:", error);
-    return res.status(500).json({ error: "INTERNAL SERVER ERROR" });
+    return res
+      .status(500)
+      .json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 

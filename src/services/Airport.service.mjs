@@ -25,7 +25,9 @@ async function deleteAirport(req, res) {
     }
     res.status(204).json({
       success: true,
-      data: "deleted Successfully",
+      data: {
+        message: "Deleted Successfully",
+      },
     });
   } catch (error) {
     console.error("ERROR deleting Airport:", error);

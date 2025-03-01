@@ -25,7 +25,9 @@ async function deleteLocation(req, res) {
     }
     res.status(204).json({
       success: true,
-      data: "deleted Successfully",
+      data: {
+        message: "Deleted Successfully",
+      },
     });
   } catch (error) {
     console.error("ERROR deleting Location:", error);

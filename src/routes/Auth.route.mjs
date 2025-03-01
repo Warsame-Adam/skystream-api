@@ -1,10 +1,14 @@
-import {Router} from "express";
+import { Router } from "express";
 import UserService from "../services/User.service.mjs";
-import {ValidateSignIn, ValidateSignUp} from "../validators/User.validator.mjs";
+const protect = require("../middleware/protect");
 
 const AuthRouter = Router();
 
-AuthRouter.post("/auth/signup", ValidateSignUp, UserService.signUp);
-AuthRouter.post("/auth/signin", ValidateSignIn, UserService.signIn);
+AuthRouter.post("/signup", UserService.signUp);
+AuthRouter.post("/login", UserService.signIn);
+AuthRouter.post("/externalLogin", UserService.externalLogin);
+
+AuthRouter.use(protect);
+AuthRouter.post("/validateToken", UserService.validateUser);
 
 export default AuthRouter;
