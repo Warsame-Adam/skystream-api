@@ -1,4 +1,7 @@
 import FlightModel from "../models/Flight.model.mjs";
+import LocationModel from "../models/location.model.mjs";
+import AirlineModel from "../models/Airline.model.mjs";
+import ClassTypeModel from "../models/ClassType.model.mjs";
 
 async function deleteFlight(req, res) {
   try {
@@ -116,74 +119,136 @@ async function getFlightById(req, res) {
 async function getFlightsBySearch(req, res) {
   try {
     const {
-      departureCity,
-      arrivalCity,
-      airline,
+      oneway,
+      departureLocation,
+      arrivalLocation,
+      direct,
+      outboundAirline,
+      returnAirline,
       flightNumber,
       frequency,
-      schedule,
+      departureTime,
+      arrivalTime,
       classes,
       duration,
     } = req.query;
 
     const filters = {};
 
+    if (oneway) {
+      filters.twoWay = false;
+    }
+    if (direct === "true") {
+      filters["$and"] = [{ "location.outboundDirect": true }];
+
+      // If the flight is two-way, ensure return is also direct
+      filters["$and"].push({
+        $or: [{ twoWay: false }, { "location.returnDirect": true }],
+      });
+    }
+
     // APPLY FILTERS DYNAMICALLY
-    if (departureCity) {
-      filters.departureCity = { $regex: departureCity, $options: "i" };
+    if (departureLocation) {
+      const departureCity = await LocationModel.findOne({
+        cityCode: departureLocation?.cityCode,
+        countryCode: departureLocation?.countryCode,
+      }).select("_id");
+
+      filters["location.departureCity"] = departureCity._id;
+    }
+    if (arrivalLocation) {
+      const arrivalCity = await LocationModel.findOne({
+        cityCode: arrivalLocation.cityCode,
+        countryCode: arrivalLocation.countryCode,
+      }).select("_id");
+      filters["location.arrivalCity"] = arrivalCity._id;
     }
 
-    if (arrivalCity) {
-      filters.arrivalCity = { $regex: arrivalCity, $options: "i" };
+    if (outboundAirline && outboundAirline.length > 0) {
+      const outboundAirlineDocs = await AirlineModel.find({
+        name: { $in: outboundAirline },
+      }).select("_id");
+
+      if (outboundAirlineDocs.length > 0) {
+        filters["outboundAirline"] = {
+          $in: outboundAirlineDocs.map((doc) => doc._id),
+        };
+      }
     }
 
-    if (airline) {
-      filters.airline = { $regex: airline, $options: "i" };
+    if (returnAirline && returnAirline.length > 0) {
+      filters["twoWay"] = true; // Ensure it's a round-trip flight
+
+      const returnAirlineDocs = await AirlineModel.find({
+        name: { $in: returnAirline },
+      }).select("_id");
+
+      if (returnAirlineDocs.length > 0) {
+        filters["returnAirline"] = {
+          $in: returnAirlineDocs.map((doc) => doc._id),
+        };
+      }
     }
 
     if (flightNumber) {
       filters.flightNumber = { $regex: flightNumber, $options: "i" };
     }
-
     if (frequency) {
       filters.frequency = { $in: frequency }; // Match any of the specified days
     }
 
-    if (schedule?.departureTime || schedule?.arrivalTime) {
-      filters.schedule = {};
-      if (schedule.departureTime) {
-        filters.schedule.departureTime = {
-          $gte: new Date(schedule.departureTime),
-        };
-      }
-      if (schedule.arrivalTime) {
-        filters.schedule.arrivalTime = {
-          $lte: new Date(schedule.arrivalTime),
-        };
-      }
-    }
-
-    if (classes?.length) {
-      filters.classes = { $elemMatch: {} };
-      classes.forEach((cls) => {
-        if (cls.classType) {
-          filters.classes.$elemMatch.classType = cls.classType;
-        }
-        if (cls.price) {
-          filters.classes.$elemMatch.price = cls.price;
-        }
-        if (cls.vacancy) {
-          filters.classes.$elemMatch.vacancy = cls.vacancy;
-        }
+    // Step 6: Apply departureTime and arrivalTime filters
+    const scheduleFilters = [];
+    if (departureTime && arrivalTime) {
+      scheduleFilters.push({
+        "schedule.departureTime": { $gte: new Date(parseInt(departureTime)) },
+        "schedule.arrivalTime": { $lte: new Date(parseInt(arrivalTime)) },
+      });
+    } else if (departureTime) {
+      scheduleFilters.push({
+        "schedule.departureTime": { $gte: new Date(parseInt(departureTime)) },
+      });
+    } else if (arrivalTime) {
+      scheduleFilters.push({
+        "schedule.arrivalTime": { $lte: new Date(parseInt(arrivalTime)) },
       });
     }
-
-    if (duration) {
-      filters.duration = { $regex: duration, $options: "i" };
+    // Apply schedule filters
+    if (scheduleFilters.length) {
+      filters["$and"] = filters["$and"]
+        ? [...filters["$and"], ...scheduleFilters]
+        : scheduleFilters;
     }
 
+    const classFilters = [];
+    if (classes && Array.isArray(classes)) {
+      for (const classItem of classes) {
+        const classTypeDoc = await ClassTypeModel.findOne({
+          type: classItem.type,
+        }).select("_id");
+
+        if (classTypeDoc) {
+          classFilters.push({
+            classes: {
+              $elemMatch: {
+                classType: classTypeDoc._id,
+                vacancy: { $gte: classItem.vacancy },
+              },
+            },
+          });
+        }
+      }
+    }
+    // Apply class filters
+    if (classFilters.length) {
+      filters["$and"] = filters["$and"]
+        ? [...filters["$and"], ...classFilters]
+        : classFilters;
+    }
     // FETCH FLIGHTS MATCHING THE FILTERS
-    const flights = await FlightModel.find(filters);
+    const flights = await FlightModel.find(filters).populate(
+      "location.departureCity location.arrivalCity location.outboundAirline location.returnAirline classes.classType"
+    );
 
     // SEND RESPONSE WITH FILTERED FLIGHTS
     return res.status(200).json(flights);
