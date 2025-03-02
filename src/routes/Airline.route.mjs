@@ -1,6 +1,7 @@
 import AirlinesService from "../services/Airline.service.mjs";
 
 import protect from "../middleware/protect.mjs";
+import imageUpload from "../middleware/imageUpload.mjs";
 
 import { Router } from "express";
 
@@ -13,7 +14,11 @@ AirlinesRoute.use(protect);
 AirlinesRoute.route("/")
   .get(AirlinesService.getAll)
   .delete(AirlinesService.deleteAirline)
-  .post(AirlinesService.createOne);
-AirlinesRoute.patch("/:id", AirlinesService.updateAirline);
+  .post(imageUpload("/airlines").single("logo"), AirlinesService.createOne);
+AirlinesRoute.patch(
+  "/:id",
+  imageUpload("/airlines").single("logo"),
+  AirlinesService.updateAirline
+);
 
 export default AirlinesRoute;
