@@ -1,4 +1,4 @@
-import AirlinesService from "../services/Airline.service.mjs";
+import AirlinesService from "../services/Airlines.service.mjs";
 
 import protect from "../middleware/protect.mjs";
 import imageUpload from "../middleware/imageUpload.mjs";
