@@ -131,16 +131,19 @@ async function getFlightsBySearch(req, res) {
   try {
     const {
       oneway,
-      departureLocation,
-      arrivalLocation,
+      originCountry,
+      originCity,
+      destinationCountry,
+      destinationCity,
+      departureTime,
+      arrivalTime,
       direct,
       outboundAirline,
       returnAirline,
       flightNumber,
       frequency,
-      departureTime,
-      arrivalTime,
-      classes,
+      classType,
+      vacancy,
     } = req.query;
 
     const filters = {};
@@ -148,6 +151,7 @@ async function getFlightsBySearch(req, res) {
     if (oneway) {
       filters.twoWay = false;
     }
+
     if (direct === "true") {
       filters["$and"] = [{ "location.outboundDirect": true }];
 
@@ -158,25 +162,36 @@ async function getFlightsBySearch(req, res) {
     }
 
     // APPLY FILTERS DYNAMICALLY
-    if (departureLocation) {
+    if (originCountry && originCity) {
       const departureCity = await LocationModel.findOne({
-        cityCode: departureLocation?.cityCode,
-        countryCode: departureLocation?.countryCode,
+        countryCode: { $regex: originCountry, $options: "i" },
+        cityCode: { $regex: originCity, $options: "i" },
       }).select("_id");
 
       filters["location.departureCity"] = departureCity._id;
+    } else if (originCountry) {
+      const departureCountryCities = await LocationModel.find({
+        countryCode: { $regex: originCountry, $options: "i" },
+      }).select("_id");
+
+      filters["location.departureCity"] = {
+        $in: departureCountryCities.map((doc) => doc._id),
+      };
     }
-    if (arrivalLocation) {
+
+    if (destinationCountry && destinationCity) {
       const arrivalCity = await LocationModel.findOne({
-        cityCode: arrivalLocation.cityCode,
-        countryCode: arrivalLocation.countryCode,
+        countryCode: { $regex: destinationCountry, $options: "i" },
+        cityCode: { $regex: destinationCity, $options: "i" },
       }).select("_id");
       filters["location.arrivalCity"] = arrivalCity._id;
     }
 
     if (outboundAirline && outboundAirline.length > 0) {
       const outboundAirlineDocs = await AirlineModel.find({
-        name: { $in: outboundAirline },
+        name: {
+          $in: outboundAirline.map((name) => new RegExp(`^${name}$`, "i")),
+        },
       }).select("_id");
 
       if (outboundAirlineDocs.length > 0) {
@@ -231,22 +246,19 @@ async function getFlightsBySearch(req, res) {
     }
 
     const classFilters = [];
-    if (classes && Array.isArray(classes)) {
-      for (const classItem of classes) {
-        const classTypeDoc = await ClassTypeModel.findOne({
-          type: classItem.type,
-        }).select("_id");
-
-        if (classTypeDoc) {
-          classFilters.push({
-            classes: {
-              $elemMatch: {
-                classType: classTypeDoc._id,
-                vacancy: { $gte: classItem.vacancy },
-              },
+    if (classType && vacancy) {
+      const classTypeDoc = await ClassTypeModel.findOne({
+        type: classType,
+      }).select("_id");
+      if (classTypeDoc) {
+        classFilters.push({
+          classes: {
+            $elemMatch: {
+              classType: classTypeDoc._id,
+              vacancy: { $gte: vacancy },
             },
-          });
-        }
+          },
+        });
       }
     }
     // Apply class filters
