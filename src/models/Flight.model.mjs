@@ -175,6 +175,10 @@ const flightSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    externalURL: {
+      type: String,
+      required: true,
+    },
     additionalInfo: {
       type: String,
       trim: true,

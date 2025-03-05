@@ -269,7 +269,7 @@ async function getFlightsBySearch(req, res) {
     }
     // FETCH FLIGHTS MATCHING THE FILTERS
     const flights = await FlightModel.find(filters).populate(
-      "location.departureCity location.arrivalCity location.outboundAirline location.returnAirline classes.classType"
+      "outboundAirline returnAirline location.departureCity location.arrivalCity location.departureAirport location.arrivalAirport classes.classType location.outboundStops.stopAtCity location.outboundStops.stopAtAirport location.returnStops.stopAtCity location.returnStops.stopAtAirport"
     );
 
     // SEND RESPONSE WITH FILTERED FLIGHTS
