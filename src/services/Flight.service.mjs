@@ -108,7 +108,9 @@ async function getFlightById(req, res) {
     const doc = await FlightModel.findById(flightId);
 
     if (!doc) {
-      return res.status(404).json({ error: "FLIGHT NOT FOUND" });
+      return res
+        .status(404)
+        .json({ success: false, error: "FLIGHT NOT FOUND" });
     }
 
     // SEND RESPONSE WITH FLIGHT DATA
@@ -146,7 +148,9 @@ async function getFlightsBySearch(req, res) {
       vacancy,
     } = req.query;
 
-    const filters = {};
+    const filters = {
+      "schedule.departureTime": { $gte: new Date() },
+    };
 
     if (oneway) {
       filters.twoWay = false;

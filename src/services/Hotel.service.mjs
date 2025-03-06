@@ -1,27 +1,37 @@
 import HotelModel from "../models/Hotel.model.mjs";
+import LocationModel from "../models/location.model.mjs";
 
 // * CREATE HOTEL
 async function createHotel(req, res) {
   try {
-    const {name, description, address, location, amenities, contact, policies, images, city} = req.body;
+    let hotelData = req.body;
+    if (req.files.cover && req.files.cover.length > 0)
+      hotelData.cover = req.files.cover[0].filename;
+    else
+      res
+        .status(500)
+        .json({ success: false, error: "Cover Image is Required" });
+
+    if (req.files.images && req.files.images.length > 0)
+      hotelData.images = req.files.images.map((x) => x.filename);
+    else res.status(500).json({ success: false, error: "Images are required" });
 
     // CREATE AND SAVE A NEW HOTEL
-    const newHotel = await HotelModel.create({
-      name,
-      description,
-      address,
-      location,
-      amenities,
-      contact,
-      policies,
-      images,
-      city,
-    });
+    const doc = await HotelModel.create(hotelData);
+    if (!doc)
+      return res
+        .status(500)
+        .json({ success: false, error: "Requested Hotel not created" });
 
-    res.status(201).json(newHotel);
+    res.status(200).json({
+      success: true,
+      data: {
+        doc,
+      },
+    });
   } catch (error) {
     console.error("ERROR CREATING HOTEL:", error);
-    res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 
@@ -29,10 +39,15 @@ async function createHotel(req, res) {
 async function getAllHotels(req, res) {
   try {
     const hotels = await HotelModel.find();
-    res.status(200).json(hotels);
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc: hotels,
+      },
+    });
   } catch (error) {
     console.error("ERROR FETCHING HOTELS:", error);
-    res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 
@@ -41,66 +56,152 @@ async function getHotelById(req, res) {
   try {
     const hotelId = req.params.id;
 
-    const hotel = await HotelModel.findById(hotelId);
-    if (!hotel) {
-      return res.status(404).json({error: "Hotel not found"});
+    const doc = await HotelModel.findById(hotelId);
+    if (!doc) {
+      return res.status(404).json({ success: false, error: "Hotel not found" });
     }
 
-    res.status(200).json(hotel);
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc,
+      },
+    });
   } catch (error) {
     console.error("ERROR FETCHING HOTEL:", error);
-    res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    res.status(500).json({ error: "INTERNAL SERVER ERROR" });
   }
 }
 
 // * GET HOTEL BY SEARCH
 async function getHotelsBySearch(req, res) {
   try {
-    const {name, city, latitude, longitude, amenities} = req.query;
+    let {
+      name,
+      country,
+      city,
+      latitude,
+      longitude,
+      minReview,
+      noOfRooms,
+      noOfPersons,
+      freeCancellation,
+      breakfastIncluded,
+      availableFrom,
+      availableTo,
+    } = req.query;
 
     // BUILD SEARCH QUERY
-    const query = {};
+    const query = {
+      "schedule.departureTime": { $gte: new Date() },
+    };
 
-    // Search by name (case-insensitive)
+    // 1- Name filter (case insensitive)
     if (name) {
-      query.name = {$regex: name, $options: "i"};
+      query.name = { $regex: name, $options: "i" };
     }
 
-    // Search by city (case-insensitive)
-    if (city) {
-      query.city = {$regex: city, $options: "i"};
+    // 2- Location filter (country & city)
+    if (country || city) {
+      let locationFilter = {};
+
+      if (country) {
+        locationFilter.countryCode = { $regex: country, $options: "i" };
+      }
+      if (city) {
+        locationFilter.cityCode = { $regex: city, $options: "i" };
+      }
+
+      const matchedLocations = await LocationModel.find(locationFilter).select(
+        "_id"
+      );
+      const locationIds = matchedLocations.map((loc) => loc._id);
+
+      if (locationIds.length) {
+        query.city = { $in: locationIds };
+      }
     }
 
-    // Search by location (approximate match)
+    //3-  Search by location (approximate match)
     if (latitude && longitude) {
       const LATITUDE = parseFloat(latitude);
       const LONGITUDE = parseFloat(longitude);
 
-      query.location = {
+      query["location.coordinates"] = {
         $near: {
           $geometry: {
             type: "Point",
             coordinates: [LONGITUDE, LATITUDE],
           },
-          $maxDistance: 5000, // 5 km radius (adjustable)
+          $maxDistance: 50000, // 50 km radius
         },
       };
     }
 
-    // Search by amenities
-    if (amenities) {
-      const amenitiesArray = amenities.split(",");
-      query.amenities = {$all: amenitiesArray}; // Match all specified amenities
+    // 4- Amenities Filtering (Checkboxes)
+    Object.keys(req.query).forEach((key) => {
+      if (key.startsWith("amenities.") && req.query[key] === "true") {
+        query[key] = true;
+      }
+    });
+
+    // 5. Deals and Rooms Filters (Using $elemMatch for nested filtering)
+    let dealsFilter = {};
+    if (noOfRooms) {
+      dealsFilter["rooms.noOfRooms"] = parseInt(noOfRooms);
+    }
+    if (noOfPersons) {
+      dealsFilter["rooms.maxPersonAllowed"] = { $gte: parseInt(noOfPersons) };
+    }
+    if (freeCancellation === "true") {
+      dealsFilter["rooms.freeCancellation"] = true;
+    }
+
+    if (breakfastIncluded === "true") {
+      dealsFilter["rooms.breakfastIncluded"] = true;
+    }
+
+    if (availableFrom) {
+      dealsFilter["rooms.availableFrom"] = { $gte: new Date(availableFrom) };
+    }
+
+    if (availableTo) {
+      dealsFilter["rooms.availableTo"] = { $lte: new Date(availableTo) };
+    }
+
+    // Only apply deals filter if any condition exists
+    if (Object.keys(dealsFilter).length > 0) {
+      filter.deals = { $elemMatch: { rooms: { $elemMatch: dealsFilter } } };
     }
 
     // FETCH HOTELS MATCHING QUERY
-    const hotels = await HotelModel.find(query);
+    let hotels = await HotelModel.find(query).populate("city");
 
-    // SEN
-    res.status(200).json(hotels);
+    if (minReview) {
+      const minReviewCount = parseFloat(minReview);
+
+      hotels = hotels
+        .map((hotel) => {
+          if (hotel.reviews.length === 0) {
+            hotel.averageRating = 0;
+          } else {
+            hotel.averageRating =
+              hotel.reviews.reduce((acc, review) => acc + review.rating, 0) /
+              hotel.reviews.length;
+          }
+          return hotel;
+        })
+        .filter((hotel) => hotel.averageRating >= minReviewCount);
+    }
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc: hotels,
+      },
+    });
   } catch (error) {
     console.error("ERROR FETCHING HOTELS:", error);
-    res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 
@@ -108,20 +209,34 @@ async function getHotelsBySearch(req, res) {
 async function updateHotel(req, res) {
   try {
     const hotelId = req.params.id;
-    const updateData = req.body;
+    let updateData = req.body;
 
-    const updatedHotel = await HotelModel.findByIdAndUpdate(hotelId, updateData, {new: true});
-    if (!updatedHotel) {
-      return res.status(404).json({error: "Hotel not found"});
+    if (req.files.cover && req.files.cover.length > 0)
+      updateData.cover = req.files.cover[0].filename;
+
+    if (req.files.images && req.files.images.length > 0)
+      updateData.$push = {
+        images: { $each: req.files.images.map((file) => file.filename) },
+      };
+
+    const doc = await HotelModel.findByIdAndUpdate(hotelId, updateData, {
+      new: true,
+      runValidators: true,
+    });
+    if (!doc) {
+      return res.status(404).json({ success: false, error: "Hotel not found" });
     }
-
-    res.status(200).json({
+    return res.status(200).json({
+      success: true,
       message: "Hotel updated successfully",
-      hotel: updatedHotel,
+
+      data: {
+        doc,
+      },
     });
   } catch (error) {
     console.error("ERROR UPDATING HOTEL:", error);
-    res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 
@@ -132,13 +247,15 @@ async function deleteHotel(req, res) {
 
     const deletedHotel = await HotelModel.findByIdAndDelete(hotelId);
     if (!deletedHotel) {
-      return res.status(404).json({error: "Hotel not found"});
+      return res.status(404).json({ success: false, error: "Hotel not found" });
     }
 
-    res.status(200).json({message: "Hotel deleted successfully"});
+    res
+      .status(200)
+      .json({ success: true, message: "Hotel deleted successfully" });
   } catch (error) {
     console.error("ERROR DELETING HOTEL:", error);
-    res.status(500).json({error: "INTERNAL SERVER ERROR"});
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 

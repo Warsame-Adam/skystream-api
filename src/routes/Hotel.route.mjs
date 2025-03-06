@@ -1,13 +1,32 @@
-import {Router} from "express";
-import {ValidateGetHotelById, ValidateHotelPayload} from "../validators/Hotel.validator.mjs";
+import { Router } from "express";
 import HotelService from "../services/Hotel.service.mjs";
-import AuthGuard from "../guards/auth.gaurd.mjs";
+import protect from "../middleware/protect.mjs";
+import imageUpload from "../middleware/imageUpload.mjs";
 
 const HotelRouter = Router();
 
-HotelRouter.post("/hotels", AuthGuard, ValidateHotelPayload, HotelService.createHotel);
-HotelRouter.get("/hotels", HotelService.getAllHotels);
-HotelRouter.get("/hotels/search", HotelService.getHotelsBySearch);
-HotelRouter.get("/hotels/:id", ValidateGetHotelById, HotelService.getHotelById);
+HotelRouter.get("/search", HotelService.getHotelsBySearch);
+HotelRouter.get("/:id", HotelService.getHotelById);
+
+HotelRouter.use(protect);
+HotelRouter.route("/")
+  .get(HotelService.getAllHotels)
+  .delete(HotelService.deleteHotel)
+  .post(
+    imageUpload("/hotels").fields([
+      { name: "cover", maxCount: 1 },
+      { name: "images", maxCount: 5 },
+    ]),
+    HotelService.createHotel
+  );
+
+HotelRouter.patch(
+  "/:id",
+  imageUpload("/hotels").fields([
+    { name: "cover", maxCount: 1 },
+    { name: "images", maxCount: 5 },
+  ]),
+  HotelService.updateHotel
+);
 
 export default HotelRouter;
