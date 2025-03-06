@@ -82,6 +82,7 @@ async function getHotelsBySearch(req, res) {
       city,
       latitude,
       longitude,
+      rating,
       minReview,
       noOfRooms,
       noOfPersons,
@@ -177,7 +178,7 @@ async function getHotelsBySearch(req, res) {
     // FETCH HOTELS MATCHING QUERY
     let hotels = await HotelModel.find(query).populate("city");
 
-    if (minReview) {
+    if (minReview || rating) {
       const minReviewCount = parseFloat(minReview);
 
       hotels = hotels
@@ -191,7 +192,11 @@ async function getHotelsBySearch(req, res) {
           }
           return hotel;
         })
-        .filter((hotel) => hotel.averageRating >= minReviewCount);
+        .filter((hotel) =>
+          rating
+            ? Math.floor(hotel.averageRating) === rating
+            : hotel.averageRating >= minReviewCount
+        );
     }
     return res.status(200).json({
       success: true,
