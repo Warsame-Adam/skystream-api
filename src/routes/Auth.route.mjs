@@ -1,6 +1,6 @@
 import { Router } from "express";
 import UserService from "../services/User.service.mjs";
-const protect = require("../middleware/protect");
+import protect from "../middleware/protect.mjs";
 
 const AuthRouter = Router();
 

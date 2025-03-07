@@ -9,10 +9,10 @@ const AirlinesRoute = Router();
 
 AirlinesRoute.get("/:id", AirlinesService.getOne);
 
+AirlinesRoute.route("/").get(AirlinesService.getAll);
 AirlinesRoute.use(protect);
 
 AirlinesRoute.route("/")
-  .get(AirlinesService.getAll)
   .delete(AirlinesService.deleteAirline)
   .post(imageUpload("/airlines").single("logo"), AirlinesService.createOne);
 AirlinesRoute.patch(

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 import ClassTypeModel from "../models/ClassType.model.mjs";
 import FlightModel from "../models/Flight.model.mjs";
 async function deleteClassType(req, res) {

@@ -1,10 +1,10 @@
 import { Router } from "express";
 import UserService from "../services/User.service.mjs";
-const protect = require("../middleware/protect");
+import protect from "../middleware/protect.mjs";
 
 const UserRoute = Router();
 
 UserRoute.use(protect);
 UserRoute.get("/users/:id", UserService.getUserById);
 
-module.exports = UserRoute;
+export default UserRoute;

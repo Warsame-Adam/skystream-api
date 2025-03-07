@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 import RolesModel from "../models/roles.model.mjs";
 import UserModel from "../models/User.model.mjs";
 

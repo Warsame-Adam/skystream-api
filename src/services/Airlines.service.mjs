@@ -38,7 +38,7 @@ async function updateAirline(req, res) {
     const updatedObj = {};
 
     if (name) updatedObj.name = name;
-    if (req.file.filename) updatedObj.logo = req.file.filename;
+    if (req?.file?.filename) updatedObj.logo = req.file.filename;
 
     const doc = await AirlineModel.findByIdAndUpdate(
       req.params.id,

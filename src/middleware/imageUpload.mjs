@@ -1,6 +1,8 @@
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
+import multer from "multer";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const upload = (uploadPath) => {
   const storage = multer.diskStorage({
@@ -34,5 +36,4 @@ const upload = (uploadPath) => {
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   });
 };
-
-module.exports = upload;
+export default upload;

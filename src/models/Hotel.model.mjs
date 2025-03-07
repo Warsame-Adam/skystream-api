@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
-const validator = require("validator");
-
+import validator from "validator";
 const hotelSchema = new Schema(
   {
     name: {
@@ -23,7 +22,7 @@ const hotelSchema = new Schema(
     },
     city: {
       type: Schema.Types.ObjectId,
-      ref: "CITIES",
+      ref: "Cities",
       required: [true, "City is required"],
     },
     address: {

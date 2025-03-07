@@ -8,9 +8,10 @@ const HotelRouter = Router();
 HotelRouter.get("/search", HotelService.getHotelsBySearch);
 HotelRouter.get("/:id", HotelService.getHotelById);
 
+HotelRouter.route("/").get(HotelService.getAllHotels);
+
 HotelRouter.use(protect);
 HotelRouter.route("/")
-  .get(HotelService.getAllHotels)
   .delete(HotelService.deleteHotel)
   .post(
     imageUpload("/hotels").fields([

@@ -1,7 +1,7 @@
 import UserModel from "../models/User.model.mjs";
 import RolesModel from "../models/roles.model.mjs";
 import { generateJWT } from "../utils/jwt.utils.mjs";
-const { OAuth2Client } = require("google-auth-library");
+import { OAuth2Client } from "google-auth-library";
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -66,7 +66,7 @@ async function signUp(req, res) {
     console.error("ERROR CREATING USER:", error);
     return res
       .status(500)
-      .json({ success: true, error: "INTERNAL SERVER ERROR" });
+      .json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
 
@@ -97,11 +97,6 @@ async function signIn(req, res) {
       req,
       res
     );
-    // SEND RESPONSE WITH USER AND TOKEN
-    return res.status(200).json({
-      user,
-      token,
-    });
   } catch (error) {
     console.error("ERROR SIGNING IN:", error);
     return res

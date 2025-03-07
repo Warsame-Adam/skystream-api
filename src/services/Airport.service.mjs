@@ -41,9 +41,9 @@ async function updateAirport(req, res) {
     const updatedObj = {};
 
     if (name) updatedObj.name = name;
-    if (req.file.filename) updatedObj.logo = req.file.filename;
+    if (req?.file?.filename) updatedObj.logo = req.file.filename;
     if (location) {
-      if (location.type) updatedObj.logo = location.type;
+      if (location.type) updatedObj.type = location.type;
       if (location.coordinates) updatedObj.coordinates = location.coordinates;
     }
     const doc = await AirportModel.findByIdAndUpdate(
@@ -73,7 +73,7 @@ async function updateAirport(req, res) {
 async function createOne(req, res) {
   try {
     const { name, location } = req.body;
-
+    console.log(location);
     const doc = await AirportModel.create({
       name,
       location,

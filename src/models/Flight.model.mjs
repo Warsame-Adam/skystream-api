@@ -7,7 +7,7 @@ const flightSchema = new Schema(
     },
     outboundAirline: {
       type: Schema.Types.ObjectId,
-      ref: "AIRLINES",
+      ref: "Airline",
       required: [true, "Outbound Airline is Required"],
     },
     twoWay: {
@@ -16,7 +16,7 @@ const flightSchema = new Schema(
     },
     returnAirline: {
       type: Schema.Types.ObjectId,
-      ref: "AIRLINES",
+      ref: "Airline",
       required: function () {
         return this.twoWay === true, "Return Airline is Required";
       },
@@ -37,7 +37,7 @@ const flightSchema = new Schema(
           {
             stopAtCity: {
               type: Schema.Types.ObjectId,
-              ref: "CITIES",
+              ref: "Cities",
               required: function () {
                 return (
                   this.location.outboundDirect === false,
@@ -47,7 +47,7 @@ const flightSchema = new Schema(
             },
             stopAtAirport: {
               type: Schema.Types.ObjectId,
-              ref: "AIRPORTS",
+              ref: "Airport",
               required: function () {
                 return (
                   this.location.outboundDirect === false,
@@ -78,7 +78,7 @@ const flightSchema = new Schema(
           {
             stopAtCity: {
               type: Schema.Types.ObjectId,
-              ref: "CITIES",
+              ref: "Cities",
               required: function () {
                 return (
                   this.twoWay === true && this.location.returnDirect === false,
@@ -88,7 +88,7 @@ const flightSchema = new Schema(
             },
             stopAtAirport: {
               type: Schema.Types.ObjectId,
-              ref: "AIRPORTS",
+              ref: "Airport",
               required: function () {
                 return (
                   this.twoWay === true && this.location.returnDirect === false,
@@ -107,22 +107,22 @@ const flightSchema = new Schema(
       },
       departureCity: {
         type: Schema.Types.ObjectId,
-        ref: "CITIES",
+        ref: "Cities",
         required: [true, "Departure city is required"], //city code
       },
       departureAirport: {
         type: Schema.Types.ObjectId,
-        ref: "AIRPORTS",
+        ref: "Airport",
         required: [true, "Departure Airport name is required"],
       },
       arrivalCity: {
         type: Schema.Types.ObjectId,
-        ref: "CITIES",
+        ref: "Cities",
         required: [true, "Arrival city is required"],
       },
       arrivalAirport: {
         type: Schema.Types.ObjectId,
-        ref: "AIRPORTS",
+        ref: "Airport",
         required: [true, "Arrival Airport name is required"],
       },
     },
@@ -156,7 +156,7 @@ const flightSchema = new Schema(
       {
         classType: {
           type: Schema.Types.ObjectId,
-          ref: "FLIGHTCLASSTYPES",
+          ref: "FlightClassType",
           required: [true, "Class type is required"], // Example: "Economy"
         },
         price: {

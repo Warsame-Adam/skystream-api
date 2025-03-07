@@ -10,10 +10,10 @@ const FlightRoute = Router();
 FlightRoute.get("/search", FlightService.getFlightsBySearch);
 FlightRoute.get("/:id", FlightService.getFlightById);
 
-FlightRoute.use(protect);
+FlightRoute.route("/").get(FlightService.getAllFlights);
 
+FlightRoute.use(protect);
 FlightRoute.route("/")
-  .get(FlightService.getAllFlights)
   .delete(FlightService.deleteFlight)
   .post(imageUpload("/flights").single("image"), FlightService.addFlight);
 FlightRoute.patch(

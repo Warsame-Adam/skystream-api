@@ -1,9 +1,9 @@
-const { promisify } = require("util");
-const jwt = require("jsonwebtoken");
-const UserModel = require("../models/User.model.mjs");
+import { promisify } from "util";
+import jwt from "jsonwebtoken";
+import UserModel from "../models/User.model.mjs";
 
 //To Check whether user is login or not
-module.exports = async (req, res, next) => {
+export default async (req, res, next) => {
   try {
     //1 getting Token and check if there
     let token;

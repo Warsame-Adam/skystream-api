@@ -8,12 +8,13 @@ const LocationRoute = Router();
 
 LocationRoute.get("/:id", LocationsService.getOne);
 
-LocationRoute.use(protect);
+LocationRoute.route("/").get(LocationsService.getAll);
 
-LocationRoute.route("/")
-  .get(LocationsService.getAll)
-  .delete(LocationsService.deleteLocation)
-  .post(LocationsService.createOne);
-LocationRoute.patch("/:id", LocationsService.updateLocation);
+LocationRoute.use(protect);
+LocationRoute.route("/").post(LocationsService.createOne);
+
+LocationRoute.route("/:id")
+  .patch(LocationsService.updateLocation)
+  .delete(LocationsService.deleteLocation);
 
 export default LocationRoute;

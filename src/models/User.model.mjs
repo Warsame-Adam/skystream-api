@@ -1,6 +1,6 @@
-import { Schema, model } from "mongoose";
-const validator = require("validator");
-const bcrypt = require("bcryptjs");
+import mongoose, { Schema, model } from "mongoose";
+import validator from "validator";
+import bcrypt from "bcryptjs";
 const userSchema = new Schema(
   {
     name: {
@@ -32,7 +32,7 @@ const userSchema = new Schema(
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "ROLES",
+        ref: "Roles",
         // validate: {
         //   validator: async function (v) {
         //     return await Roles.findById(v, (err, rec) => rec !== null);

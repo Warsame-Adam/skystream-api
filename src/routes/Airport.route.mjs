@@ -9,10 +9,10 @@ const AirportRoute = Router();
 
 AirportRoute.get("/:id", AirportService.getOne);
 
-AirportRoute.use(protect);
+AirportRoute.route("/").get(AirportService.getAll);
 
+AirportRoute.use(protect);
 AirportRoute.route("/")
-  .get(AirportService.getAll)
   .delete(AirportService.deleteAirport)
   .post(imageUpload("/airports").single("logo"), AirportService.createOne);
 AirportRoute.patch(
