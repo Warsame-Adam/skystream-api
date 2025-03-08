@@ -6,6 +6,8 @@ import imageUpload from "../middleware/imageUpload.mjs";
 const HotelRouter = Router();
 
 HotelRouter.get("/search", HotelService.getHotelsBySearch);
+HotelRouter.get("/getHotelsStats", HotelService.getHotelsStats);
+
 HotelRouter.get("/:id", HotelService.getHotelById);
 
 HotelRouter.route("/").get(HotelService.getAllHotels);

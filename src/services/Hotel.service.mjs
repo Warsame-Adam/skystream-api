@@ -38,7 +38,7 @@ async function createHotel(req, res) {
 // * GET ALL HOTELS
 async function getAllHotels(req, res) {
   try {
-    const hotels = await HotelModel.find();
+    const hotels = await HotelModel.find().populate("city");
     return res.status(200).json({
       success: true,
       data: {
@@ -56,7 +56,7 @@ async function getHotelById(req, res) {
   try {
     const hotelId = req.params.id;
 
-    const doc = await HotelModel.findById(hotelId);
+    const doc = await HotelModel.findById(hotelId).populate("city");
     if (!doc) {
       return res.status(404).json({ success: false, error: "Hotel not found" });
     }
@@ -172,7 +172,7 @@ async function getHotelsBySearch(req, res) {
 
     // Only apply deals filter if any condition exists
     if (Object.keys(dealsFilter).length > 0) {
-      filter.deals = { $elemMatch: { rooms: { $elemMatch: dealsFilter } } };
+      query.deals = { $elemMatch: { rooms: { $elemMatch: dealsFilter } } };
     }
 
     // FETCH HOTELS MATCHING QUERY
@@ -210,6 +210,138 @@ async function getHotelsBySearch(req, res) {
   }
 }
 
+async function getHotelsStats(req, res) {
+  try {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    const pipeline = [
+      {
+        $addFields: {
+          averageRating: {
+            $cond: {
+              if: { $eq: [{ $size: "$reviews" }, 0] },
+              then: 0,
+              else: { $avg: "$reviews.rating" },
+            },
+          },
+        },
+      },
+      {
+        $facet: {
+          highestRatedHotel: [
+            { $sort: { averageRating: -1 } },
+            { $limit: 1 },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                averageRating: 1,
+              },
+            },
+          ],
+
+          cheapestMonthToBook: [
+            { $unwind: "$deals" },
+            { $unwind: "$deals.rooms" },
+            {
+              $match: {
+                "deals.rooms.availableFrom": { $gte: oneYearAgo },
+              },
+            },
+            {
+              $project: {
+                month: { $month: "$deals.rooms.availableFrom" },
+                pricePerNight: "$deals.rooms.pricePerNight",
+              },
+            },
+            {
+              $group: {
+                _id: "$month",
+                minPrice: { $min: "$pricePerNight" },
+              },
+            },
+            { $sort: { minPrice: 1 } },
+            { $limit: 1 },
+            {
+              $project: {
+                _id: 0,
+                cheapestMonth: "$_id",
+                minPrice: 1,
+              },
+            },
+          ],
+
+          average4StarPrice: [
+            {
+              $match: {
+                averageRating: { $gte: 4, $lt: 5 },
+              },
+            },
+            { $unwind: "$deals" },
+            { $unwind: "$deals.rooms" },
+            {
+              $group: {
+                _id: null,
+                avgPrice: { $avg: "$deals.rooms.pricePerNight" },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                avg4StarPrice: "$avgPrice",
+              },
+            },
+          ],
+
+          average5StarPrice: [
+            {
+              $match: {
+                averageRating: { $gte: 5 },
+              },
+            },
+            { $unwind: "$deals" },
+            { $unwind: "$deals.rooms" },
+            {
+              $group: {
+                _id: null,
+                avgPrice: { $avg: "$deals.rooms.pricePerNight" },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                avg5StarPrice: "$avgPrice",
+              },
+            },
+          ],
+        },
+      },
+    ];
+    const result = await HotelModel.aggregate(pipeline);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc: {
+          highestRatedHotel: result[0].highestRatedHotel[0] || null,
+          cheapestMonthToBook: result[0].cheapestMonthToBook[0] || {
+            cheapestMonth: 1,
+          },
+          average4StarPrice: result[0].average4StarPrice.length
+            ? result[0].average4StarPrice[0].avg4StarPrice
+            : 0,
+          average5StarPrice: result[0].average5StarPrice.length
+            ? result[0].average5StarPrice[0].avg5StarPrice
+            : 0,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("ERROR FETCHING HOTELS:", error);
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
+  }
+}
 // * UPDATE HOTEL
 async function updateHotel(req, res) {
   try {
@@ -269,6 +401,7 @@ const HotelService = {
   getAllHotels,
   getHotelById,
   getHotelsBySearch,
+  getHotelsStats,
   updateHotel,
   deleteHotel,
 };
