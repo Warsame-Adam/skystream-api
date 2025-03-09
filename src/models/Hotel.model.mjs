@@ -128,78 +128,87 @@ const hotelSchema = new Schema(
       type: String,
       trim: true,
     },
-    reviews: [
-      {
-        rating: {
-          type: Number,
-          min: 0,
-          max: 5,
-          required: [true, "Rating Star is Required"],
-        },
-        comment: {
-          type: String,
-          required: [true, "Rating Comment is Required"],
-        },
-        submittedBy: {
-          type: String,
-          required: [true, "Review Submitted By is Required"],
-        },
-        createdOn: {
-          type: Date,
-          default: Date.now(),
-        },
-      },
-    ],
-    deals: [
-      {
-        site: {
-          type: String,
-          required: [true, "Deal Source is required"],
-        },
-        siteLogo: {
-          type: String,
-          required: [true, "Deal Source Logo is required"],
-        },
-        rooms: [
-          {
-            type: {
-              type: String,
-              required: [true, "Room Type is required"],
-            },
-            pricePerNight: {
-              type: Number,
-              required: [true, "Price is required"],
-            },
-            noOfRooms: {
-              type: Number,
-              required: [true, "Number of Rooms is required"],
-            },
-            maxPersonAllowed: {
-              type: Number,
-              required: [true, "Maximum Number of Persons allowed is required"],
-            },
-            freeCancellation: {
-              type: Boolean,
-              default: false,
-              required: [true, "Free Cancellation Policy is required"],
-            },
-            breakfastIncluded: {
-              type: Boolean,
-              default: true,
-              required: [true, "Breakfast Included is required"],
-            },
-            availableFrom: {
-              type: Date,
-              required: [true, "Available from time is required"],
-            },
-            availableTo: {
-              type: Date,
-              required: [true, "Available to time is required"],
-            },
+    reviews: {
+      type: [
+        {
+          rating: {
+            type: Number,
+            min: 0,
+            max: 5,
+            required: [true, "Rating Star is Required"],
           },
-        ],
-      },
-    ],
+          comment: {
+            type: String,
+            required: [true, "Rating Comment is Required"],
+          },
+          submittedBy: {
+            type: String,
+            required: [true, "Review Submitted By is Required"],
+          },
+          createdOn: {
+            type: Date,
+            default: Date.now(),
+          },
+        },
+      ],
+      default: [],
+    },
+    deals: {
+      type: [
+        {
+          site: {
+            type: String,
+            required: [true, "Deal Source is required"],
+          },
+          siteLogo: {
+            type: String,
+            required: [true, "Deal Source Logo is required"],
+          },
+          rooms: [
+            {
+              type: {
+                type: String,
+                required: [true, "Room Type is required"], //one bed two bed or luxury etc
+              },
+              pricePerNight: {
+                type: Number,
+                required: [true, "Price is required"],
+              },
+              noOfRooms: {
+                type: Number,
+                required: [true, "Number of Rooms is required"],
+              },
+              maxPersonAllowed: {
+                type: Number,
+                required: [
+                  true,
+                  "Maximum Number of Persons allowed is required",
+                ],
+              },
+              freeCancellation: {
+                type: Boolean,
+                default: false,
+                required: [true, "Free Cancellation Policy is required"],
+              },
+              breakfastIncluded: {
+                type: Boolean,
+                default: true,
+                required: [true, "Breakfast Included is required"],
+              },
+              availableFrom: {
+                type: Date,
+                required: [true, "Available from time is required"],
+              },
+              availableTo: {
+                type: Date,
+                required: [true, "Available to time is required"],
+              },
+            },
+          ],
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

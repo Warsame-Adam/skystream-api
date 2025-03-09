@@ -156,12 +156,23 @@ async function getFlightsBySearch(req, res) {
       filters.twoWay = false;
     }
 
-    if (direct === "true") {
-      filters["$and"] = [{ "location.outboundDirect": true }];
+    if (direct !== undefined) {
+      filters["$and"] = [
+        {
+          "location.outboundDirect":
+            direct === true || direct === "true" ? true : false,
+        },
+      ];
 
       // If the flight is two-way, ensure return is also direct
       filters["$and"].push({
-        $or: [{ twoWay: false }, { "location.returnDirect": true }],
+        $or: [
+          { twoWay: false },
+          {
+            "location.returnDirect":
+              direct === true || direct === "true" ? true : false,
+          },
+        ],
       });
     }
 

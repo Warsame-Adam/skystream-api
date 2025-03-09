@@ -1,10 +1,13 @@
 import HotelModel from "../models/Hotel.model.mjs";
 import LocationModel from "../models/location.model.mjs";
-
+import parseDate from "../utils/parseDate.mjs";
 // * CREATE HOTEL
 async function createHotel(req, res) {
   try {
     let hotelData = req.body;
+    delete hotelData["reviews"];
+    delete hotelData["deals"];
+
     if (req.files.cover && req.files.cover.length > 0)
       hotelData.cover = req.files.cover[0].filename;
     else
@@ -93,9 +96,7 @@ async function getHotelsBySearch(req, res) {
     } = req.query;
 
     // BUILD SEARCH QUERY
-    const query = {
-      "schedule.departureTime": { $gte: new Date() },
-    };
+    const query = {};
 
     // 1- Name filter (case insensitive)
     if (name) {
@@ -117,7 +118,6 @@ async function getHotelsBySearch(req, res) {
         "_id"
       );
       const locationIds = matchedLocations.map((loc) => loc._id);
-
       if (locationIds.length) {
         query.city = { $in: locationIds };
       }
@@ -141,8 +141,9 @@ async function getHotelsBySearch(req, res) {
 
     // 4- Amenities Filtering (Checkboxes)
     Object.keys(req.query).forEach((key) => {
-      if (key.startsWith("amenities.") && req.query[key] === "true") {
-        query[key] = true;
+      if (key.startsWith("amenities.")) {
+        query[key] =
+          req.query[key] === true || req.query[key] === "true" ? true : false;
       }
     });
 
@@ -154,27 +155,46 @@ async function getHotelsBySearch(req, res) {
     if (noOfPersons) {
       dealsFilter["rooms.maxPersonAllowed"] = { $gte: parseInt(noOfPersons) };
     }
-    if (freeCancellation === "true") {
-      dealsFilter["rooms.freeCancellation"] = true;
+
+    if (freeCancellation !== undefined) {
+      dealsFilter["rooms.freeCancellation"] =
+        freeCancellation === true || freeCancellation === "true" ? true : false;
     }
 
-    if (breakfastIncluded === "true") {
-      dealsFilter["rooms.breakfastIncluded"] = true;
+    if (breakfastIncluded !== undefined) {
+      dealsFilter["rooms.breakfastIncluded"] =
+        breakfastIncluded === true || breakfastIncluded === "true"
+          ? true
+          : false;
+    }
+    // Fixing date filtering inside the nested room object
+    if (availableFrom && availableTo) {
+      dealsFilter["rooms"] = {
+        $elemMatch: {
+          availableFrom: { $gte: parseDate(availableFrom) }, // Room should be available before or on `availableTo`
+          availableTo: { $lte: parseDate(availableTo) }, // Room should still be available after or on `availableFrom`
+        },
+      };
+    } else if (availableFrom) {
+      dealsFilter["rooms"] = {
+        $elemMatch: {
+          availableTo: { $gte: parseDate(availableFrom) },
+        },
+      };
+    } else if (availableTo) {
+      dealsFilter["rooms"] = {
+        $elemMatch: {
+          availableFrom: { $lte: parseDate(availableTo) },
+        },
+      };
     }
 
-    if (availableFrom) {
-      dealsFilter["rooms.availableFrom"] = { $gte: new Date(availableFrom) };
-    }
-
-    if (availableTo) {
-      dealsFilter["rooms.availableTo"] = { $lte: new Date(availableTo) };
-    }
-
-    // Only apply deals filter if any condition exists
+    // Apply deals filter correctly to check if at least one deal has a matching room
     if (Object.keys(dealsFilter).length > 0) {
-      query.deals = { $elemMatch: { rooms: { $elemMatch: dealsFilter } } };
+      query["deals"] = {
+        $elemMatch: dealsFilter, // Ensuring at least one deal has a room matching the conditions
+      };
     }
-
     // FETCH HOTELS MATCHING QUERY
     let hotels = await HotelModel.find(query).populate("city");
 
@@ -347,6 +367,8 @@ async function updateHotel(req, res) {
   try {
     const hotelId = req.params.id;
     let updateData = req.body;
+    delete updateData["reviews"];
+    delete updateData["deals"];
 
     if (req.files.cover && req.files.cover.length > 0)
       updateData.cover = req.files.cover[0].filename;
@@ -377,6 +399,146 @@ async function updateHotel(req, res) {
   }
 }
 
+// Add a Review to a Hotel
+async function addNewReview(req, res) {
+  try {
+    const { submittedBy, rating, comment } = req.body;
+    const hotelId = req.params.hotelId;
+
+    if (!submittedBy || !rating) {
+      return res
+        .status(400)
+        .json({ success: false, error: "User and rating are required" });
+    }
+
+    const updatedHotel = await HotelModel.findByIdAndUpdate(
+      hotelId,
+      { $push: { reviews: { submittedBy, rating, comment } } },
+      { new: true }
+    );
+
+    if (!updatedHotel) {
+      return res.status(404).json({
+        success: false,
+        error: "Hotel not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Review added successfully",
+      data: {
+        doc: updatedHotel,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+}
+
+//Add a New Deal Provider with Empty Rooms
+async function addNewDealProvider(req, res) {
+  try {
+    const { site, siteLogo } = req.body;
+    const hotelId = req.params.hotelId;
+
+    if (!site || !siteLogo) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Site and Site Logo are required" });
+    }
+
+    const newDeal = { site, siteLogo, rooms: [] };
+
+    const updatedHotel = await HotelModel.findByIdAndUpdate(
+      hotelId,
+      { $push: { deals: newDeal } },
+      { new: true }
+    );
+
+    if (!updatedHotel) {
+      return res.status(404).json({ success: false, error: "Hotel not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Deal provider added successfully",
+      data: {
+        doc: updatedHotel,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+}
+
+async function addNewDeal(req, res) {
+  try {
+    const {
+      type,
+      pricePerNight,
+      noOfRooms,
+      maxPersonAllowed,
+      freeCancellation,
+      breakfastIncluded,
+      availableFrom,
+      availableTo,
+    } = req.body;
+    const { hotelId, dealId } = req.params;
+
+    if (
+      !type ||
+      !pricePerNight ||
+      !noOfRooms ||
+      !maxPersonAllowed ||
+      !availableFrom ||
+      !availableTo
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "All required fields must be provided",
+      });
+    }
+
+    const updatedHotel = await HotelModel.findOneAndUpdate(
+      { _id: hotelId, "deals._id": dealId },
+      {
+        $push: {
+          "deals.$.rooms": {
+            type,
+            pricePerNight,
+            noOfRooms,
+            maxPersonAllowed,
+            freeCancellation,
+            breakfastIncluded,
+            availableFrom,
+            availableTo,
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedHotel) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Hotel or Deal Provider not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Room deal added successfully",
+      data: {
+        doc: updatedHotel,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+}
 // * DELETE HOTEL
 async function deleteHotel(req, res) {
   try {
@@ -403,6 +565,9 @@ const HotelService = {
   getHotelsBySearch,
   getHotelsStats,
   updateHotel,
+  addNewReview,
+  addNewDealProvider,
+  addNewDeal,
   deleteHotel,
 };
 

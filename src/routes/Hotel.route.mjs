@@ -18,10 +18,17 @@ HotelRouter.route("/")
   .post(
     imageUpload("/hotels").fields([
       { name: "cover", maxCount: 1 },
-      { name: "images", maxCount: 5 },
+      { name: "images" },
     ]),
     HotelService.createHotel
   );
+
+HotelRouter.post("/new-review/:hotelId", HotelService.addNewReview);
+HotelRouter.post(
+  "/new-deal-provider/:hotelId",
+  HotelService.addNewDealProvider
+);
+HotelRouter.post("/new-deal/:hotelId/deals/:dealId", HotelService.addNewDeal);
 
 HotelRouter.patch(
   "/:id",
