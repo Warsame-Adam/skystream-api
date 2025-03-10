@@ -77,6 +77,10 @@ const hotelSchema = new Schema(
         type: Boolean,
         default: false,
       },
+      parking: {
+        type: Boolean,
+        default: false,
+      },
     },
     contact: {
       phone: {
@@ -103,11 +107,7 @@ const hotelSchema = new Schema(
         required: [true, "Check-out time is required"],
         match: /^([01]\d|2[0-3]):([0-5]\d)$/,
       },
-      // freeCancellation: {
-      //   type: Boolean,
-      //   default: false,
-      //   required: [true, "Free Cancellation policy is required"],
-      // },
+
       breakfastAvailable: {
         type: Boolean,
         default: true,
@@ -202,6 +202,10 @@ const hotelSchema = new Schema(
               availableTo: {
                 type: Date,
                 required: [true, "Available to time is required"],
+              },
+              bookingUrl: {
+                type: String,
+                required: [true, "Site Url of Deal is Required"],
               },
             },
           ],
