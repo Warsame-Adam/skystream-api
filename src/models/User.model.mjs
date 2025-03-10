@@ -42,6 +42,9 @@ const userSchema = new Schema(
         required: true,
       },
     ],
+    favouritedFlights: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Flight" },
+    ],
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

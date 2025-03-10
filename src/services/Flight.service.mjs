@@ -2,6 +2,7 @@ import FlightModel from "../models/Flight.model.mjs";
 import LocationModel from "../models/location.model.mjs";
 import AirlineModel from "../models/Airline.model.mjs";
 import ClassTypeModel from "../models/ClassType.model.mjs";
+import UserModel from "../models/User.model.mjs";
 
 async function deleteFlight(req, res) {
   try {
@@ -27,7 +28,21 @@ async function deleteFlight(req, res) {
 async function addFlight(req, res) {
   try {
     let flightData = req.body;
-    if (req.file.filname) flightData.image = req.file.filename;
+    if (req?.file?.filname) flightData.image = req.file.filename;
+    if (flightData.location.outboundDirect === true) {
+      flightData.location.outboundStops = [];
+    }
+    if (flightData.twoWay === true) {
+      if (flightData.location.returnDirect === true) {
+        flightData.location.returnStops = [];
+      }
+    } else if (flightData.twoWay === false) {
+      flightData.location.returnDirect = undefined;
+      flightData.location.returnStops = undefined;
+      flightData.returnAirline = undefined;
+      flightData.schedule.returnDepartureTime = undefined;
+      flightData.schedule.returnArrivalTime = undefined;
+    }
     // CREATE AND SAVE NEW FLIGHT INSTANCE
     const doc = await FlightModel.create(flightData);
     if (!doc)
@@ -53,8 +68,22 @@ async function addFlight(req, res) {
 async function updateFlight(req, res) {
   try {
     let flightData = req.body;
-    if (req.file.filname) flightData.image = req.file.filename;
-
+    if (req?.file?.filname) flightData.image = req.file.filename;
+    if (flightData.twoWay === true) {
+      if (flightData?.location?.returnDirect === true) {
+        flightData.location.returnStops = [];
+      }
+    } else if (flightData.twoWay === false) {
+      if (flightData.location) {
+        flightData.location.returnDirect = undefined;
+        flightData.location.returnStops = undefined;
+      }
+      flightData.returnAirline = undefined;
+      if (flightData.schedule) {
+        flightData.schedule.returnDepartureTime = undefined;
+        flightData.schedule.returnArrivalTime = undefined;
+      }
+    }
     const doc = await FlightModel.findByIdAndUpdate(req.params.id, flightData, {
       new: true,
       runValidators: true,
@@ -77,6 +106,36 @@ async function updateFlight(req, res) {
       .status(500)
       .json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
+}
+
+async function showInterest(req, res) {
+  let body;
+  if (
+    req.user.favouritedFlights &&
+    req.user.favouritedFlights.includes(req.params.id)
+  ) {
+    body = {
+      $pull: {
+        favouritedFlights: req.params.id,
+      },
+    };
+  } else {
+    body = {
+      $push: {
+        favouritedFlights: req.params.id,
+      },
+    };
+  }
+  let doc = await UserModel.findByIdAndUpdate(req.user._id, body, {
+    new: true,
+    runValidators: true,
+  });
+  res.status(200).json({
+    success: true,
+    data: {
+      doc,
+    },
+  });
 }
 // * GET ALL FLIGHTS
 async function getAllFlights(_, res) {
@@ -309,6 +368,7 @@ const FlightService = {
   getAllFlights,
   getFlightById,
   getFlightsBySearch,
+  showInterest,
 };
 
 export default FlightService;

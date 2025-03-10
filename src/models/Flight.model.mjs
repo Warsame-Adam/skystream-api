@@ -38,28 +38,18 @@ const flightSchema = new Schema(
             stopAtCity: {
               type: Schema.Types.ObjectId,
               ref: "Cities",
-              required: function () {
-                return (
-                  this.location.outboundDirect === false,
-                  "Outbound Stop City is Required"
-                );
-              },
+              required: [true, "Outbound Stop City is Required"],
             },
             stopAtAirport: {
               type: Schema.Types.ObjectId,
               ref: "Airport",
-              required: function () {
-                return (
-                  this.location.outboundDirect === false,
-                  "Outbound Stop Airport Location is Required"
-                );
-              },
+              required: [true, "Outbound Stop Airport Location is Required"],
             },
           },
         ],
         required: function () {
           return (
-            this.location.outboundDirect === false,
+            this?.location?.outboundDirect === false,
             "Stops are required if Outbound fligh is not direct"
           );
         },
@@ -79,22 +69,12 @@ const flightSchema = new Schema(
             stopAtCity: {
               type: Schema.Types.ObjectId,
               ref: "Cities",
-              required: function () {
-                return (
-                  this.twoWay === true && this.location.returnDirect === false,
-                  "Return Stop City is Required"
-                );
-              },
+              required: [true, "Return Stop City is Required"],
             },
             stopAtAirport: {
               type: Schema.Types.ObjectId,
               ref: "Airport",
-              required: function () {
-                return (
-                  this.twoWay === true && this.location.returnDirect === false,
-                  "Return Stop Airport Location is Required"
-                );
-              },
+              required: [true, "Return Stop Airport Location is Required"],
             },
           },
         ],
