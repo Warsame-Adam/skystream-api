@@ -76,6 +76,24 @@ async function getHotelById(req, res) {
   }
 }
 
+async function getFabCityHotels(req, res) {
+  try {
+    const matchedLocations = await LocationModel.find({ isFab: true });
+    const locationIds = matchedLocations.map((loc) => loc._id);
+    const hotels = await HotelModel.find({ city: { $in: locationIds } });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc: hotels,
+      },
+    });
+  } catch (error) {
+    console.error("ERROR FETCHING HOTELS:", error);
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
+  }
+}
+
 // * GET HOTEL BY SEARCH
 async function getHotelsBySearch(req, res) {
   try {
@@ -562,6 +580,7 @@ const HotelService = {
   createHotel,
   getAllHotels,
   getHotelById,
+  getFabCityHotels,
   getHotelsBySearch,
   getHotelsStats,
   updateHotel,

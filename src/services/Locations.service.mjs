@@ -37,14 +37,14 @@ async function deleteLocation(req, res) {
 
 async function updateLocation(req, res) {
   try {
-    const { cityName, cityCode, countryName, countryCode } = req.body;
+    const { cityName, cityCode, countryName, countryCode, isFab } = req.body;
     const updatedObj = {};
 
     if (cityName) updatedObj.cityName = cityName;
     if (cityCode) updatedObj.cityCode = cityCode;
     if (countryName) updatedObj.countryName = countryName;
     if (countryCode) updatedObj.countryCode = countryCode;
-
+    if (isFab !== undefined) updatedObj.isFab = isFab;
     const doc = await LocationModel.findByIdAndUpdate(
       req.params.id,
       updatedObj,
@@ -71,13 +71,14 @@ async function updateLocation(req, res) {
 }
 async function createOne(req, res) {
   try {
-    const { cityName, cityCode, countryName, countryCode } = req.body;
+    const { cityName, cityCode, countryName, countryCode, isFab } = req.body;
 
     const doc = await LocationModel.create({
       cityName,
       cityCode,
       countryName,
       countryCode,
+      isFab: isFab !== undefined ? isFab : false,
     });
     if (!doc)
       return res

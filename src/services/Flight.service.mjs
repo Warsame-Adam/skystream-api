@@ -3,7 +3,7 @@ import LocationModel from "../models/location.model.mjs";
 import AirlineModel from "../models/Airline.model.mjs";
 import ClassTypeModel from "../models/ClassType.model.mjs";
 import UserModel from "../models/User.model.mjs";
-
+import parseDate from "../utils/parseDate.mjs";
 async function deleteFlight(req, res) {
   try {
     const doc = await FlightModel.findByIdAndDelete(req.params.id);
@@ -112,7 +112,7 @@ async function showInterest(req, res) {
   let body;
   if (
     req.user.favouritedFlights &&
-    req.user.favouritedFlights.includes(req.params.id)
+    req.user.favouritedFlights.some((x) => x.equals(req.params.id))
   ) {
     body = {
       $pull: {
@@ -158,6 +158,27 @@ async function getAllFlights(_, res) {
   }
 }
 
+async function getMyFavoriteFlights(req, res) {
+  try {
+    // FETCH ALL FLIGHTS
+    const flights = await FlightModel.find({
+      _id: { $in: req.user.favouritedFlights },
+    });
+
+    // SEND RESPONSE WITH FLIGHTS DATA
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc: flights,
+      },
+    });
+  } catch (error) {
+    console.error("ERROR FETCHING FLIGHTS:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: "INTERNAL SERVER ERROR" });
+  }
+}
 // * GET FLIGHT BY ID
 async function getFlightById(req, res) {
   try {
@@ -242,7 +263,7 @@ async function getFlightsBySearch(req, res) {
         cityCode: { $regex: originCity, $options: "i" },
       }).select("_id");
 
-      filters["location.departureCity"] = departureCity._id;
+      filters["location.departureCity"] = departureCity?._id;
     } else if (originCountry) {
       const departureCountryCities = await LocationModel.find({
         countryCode: { $regex: originCountry, $options: "i" },
@@ -258,35 +279,42 @@ async function getFlightsBySearch(req, res) {
         countryCode: { $regex: destinationCountry, $options: "i" },
         cityCode: { $regex: destinationCity, $options: "i" },
       }).select("_id");
-      filters["location.arrivalCity"] = arrivalCity._id;
+      filters["location.arrivalCity"] = arrivalCity?._id;
     }
 
-    if (outboundAirline && outboundAirline.length > 0) {
+    if (outboundAirline) {
+      const outboundAirlineCopy = Array.isArray(outboundAirline)
+        ? outboundAirline
+        : [outboundAirline];
       const outboundAirlineDocs = await AirlineModel.find({
         name: {
-          $in: outboundAirline.map((name) => new RegExp(`^${name}$`, "i")),
+          $in: outboundAirlineCopy.map((name) => new RegExp(`^${name}$`, "i")),
         },
-      }).select("_id");
-
-      if (outboundAirlineDocs.length > 0) {
-        filters["outboundAirline"] = {
-          $in: outboundAirlineDocs.map((doc) => doc._id),
-        };
-      }
+      })
+        .select("_id")
+        .lean();
+      filters["outboundAirline"] = {
+        $in: outboundAirlineDocs.map((doc) => doc._id),
+      };
     }
 
-    if (returnAirline && returnAirline.length > 0) {
+    if (returnAirline) {
       filters["twoWay"] = true; // Ensure it's a round-trip flight
+      const returnAirlineCopy = Array.isArray(returnAirline)
+        ? returnAirline
+        : [returnAirline];
 
       const returnAirlineDocs = await AirlineModel.find({
-        name: { $in: returnAirline },
-      }).select("_id");
+        name: {
+          $in: returnAirlineCopy.map((name) => new RegExp(`^${name}$`, "i")),
+        },
+      })
+        .select("_id")
+        .lean();
 
-      if (returnAirlineDocs.length > 0) {
-        filters["returnAirline"] = {
-          $in: returnAirlineDocs.map((doc) => doc._id),
-        };
-      }
+      filters["returnAirline"] = {
+        $in: returnAirlineDocs.map((doc) => doc._id),
+      };
     }
 
     if (flightNumber) {
@@ -300,16 +328,16 @@ async function getFlightsBySearch(req, res) {
     const scheduleFilters = [];
     if (departureTime && arrivalTime) {
       scheduleFilters.push({
-        "schedule.departureTime": { $gte: new Date(parseInt(departureTime)) },
-        "schedule.arrivalTime": { $lte: new Date(parseInt(arrivalTime)) },
+        "schedule.departureTime": { $gte: parseDate(departureTime) },
+        "schedule.arrivalTime": { $lte: parseDate(arrivalTime) },
       });
     } else if (departureTime) {
       scheduleFilters.push({
-        "schedule.departureTime": { $gte: new Date(parseInt(departureTime)) },
+        "schedule.departureTime": { $gte: parseDate(departureTime) },
       });
     } else if (arrivalTime) {
       scheduleFilters.push({
-        "schedule.arrivalTime": { $lte: new Date(parseInt(arrivalTime)) },
+        "schedule.arrivalTime": { $lte: parseDate(arrivalTime) },
       });
     }
     // Apply schedule filters
@@ -366,6 +394,7 @@ const FlightService = {
   updateFlight,
   addFlight,
   getAllFlights,
+  getMyFavoriteFlights,
   getFlightById,
   getFlightsBySearch,
   showInterest,

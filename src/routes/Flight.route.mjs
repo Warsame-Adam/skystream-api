@@ -8,12 +8,18 @@ import { Router } from "express";
 const FlightRoute = Router();
 
 FlightRoute.get("/search", FlightService.getFlightsBySearch);
-FlightRoute.get("/:id", FlightService.getFlightById);
 
 FlightRoute.route("/").get(FlightService.getAllFlights);
 
+FlightRoute.post("/showInterest/:id", protect, FlightService.showInterest);
+FlightRoute.get(
+  "/favoriteFlights",
+  protect,
+  FlightService.getMyFavoriteFlights
+);
+
+FlightRoute.get("/:id", FlightService.getFlightById);
 FlightRoute.use(protect);
-FlightRoute.post("/showInterest", FlightService.showInterest);
 FlightRoute.route("/")
   .delete(FlightService.deleteFlight)
   .post(imageUpload("/flights").single("image"), FlightService.addFlight);

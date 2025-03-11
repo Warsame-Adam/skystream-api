@@ -24,6 +24,10 @@ const citiesSchema = new Schema(
       trim: true,
       uppercase: true,
     },
+    isFab: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

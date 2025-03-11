@@ -1,0 +1,2007 @@
+{
+	"info": {
+		"_postman_id": "8fac68b9-efe6-47e8-ac96-4ad72d300998",
+		"name": "SkyStream",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9122006"
+	},
+	"item": [
+		{
+			"name": "Locations",
+			"item": [
+				{
+					"name": "Add Location",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cityName\": \"Paris\",\r\n    \"cityCode\": \"PAR\",\r\n    \"countryName\": \"France\",\r\n    \"countryCode\": \"FR\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/locations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"locations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Locations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/locations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"locations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Location",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/locations/67cb5f58dca03a44415c1dbe",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"locations",
+								"67cb5f58dca03a44415c1dbe"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Location",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5000/api/locations/67cb5f58dca03a44415c1dbe",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"locations",
+								"67cb5f58dca03a44415c1dbe"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Location",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"cityName\": \"Pariss\",\r\n    \"cityCode\": \"PAR\",\r\n    \"countryName\": \"France\",\r\n    \"countryCode\": \"FR\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/locations/67cb5f58dca03a44415c1dbe",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"locations",
+								"67cb5f58dca03a44415c1dbe"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "All Locations in Sky-Stream"
+		},
+		{
+			"name": "Airport",
+			"item": [
+				{
+					"name": "Update Airport",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "Charles de Gaulle Airport",
+									"type": "text"
+								},
+								{
+									"key": "logo",
+									"type": "file",
+									"src": "/C:/Users/HP Envy/Downloads/2022-12-27.jpg"
+								},
+								{
+									"key": "location[type]",
+									"value": "Point",
+									"type": "text"
+								},
+								{
+									"key": "location[coordinates]",
+									"value": "2.547778",
+									"description": "longitude",
+									"type": "text"
+								},
+								{
+									"key": "location[coordinates]",
+									"value": "49.009724",
+									"description": "latitude",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/airports/67cb6b153c2f78479cf03a8c",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airports",
+								"67cb6b153c2f78479cf03a8c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Airport",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "Bangkok Suvarnabhumi Airport",
+									"type": "text"
+								},
+								{
+									"key": "logo",
+									"type": "file",
+									"src": "/C:/Users/HP Envy/Downloads/abudhabi-bangkok-1.jpg"
+								},
+								{
+									"key": "location[type]",
+									"value": "Point",
+									"description": "Type must be Point",
+									"type": "text"
+								},
+								{
+									"key": "location[coordinates]",
+									"value": "100.750114",
+									"description": "longitude",
+									"type": "text"
+								},
+								{
+									"key": "location[coordinates]",
+									"value": "13.689999",
+									"description": "latitude",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/airports",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Airports",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/airports",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airports"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Airport",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/airports/67cb6b153c2f78479cf03a8c",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airports",
+								"67cb6b153c2f78479cf03a8c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Airport",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5000/api/airports/67cb5f58dca03a44415c1dbe",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airports",
+								"67cb5f58dca03a44415c1dbe"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "All Locations in Sky-Stream"
+		},
+		{
+			"name": "Airline",
+			"item": [
+				{
+					"name": "Update Airline",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "Qantas Airways",
+									"type": "text"
+								},
+								{
+									"key": "logo",
+									"type": "file",
+									"src": "/C:/Users/HP Envy/Downloads/960x0.webp"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/airlines/67cb6b153c2f78479cf03a8c",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airlines",
+								"67cb6b153c2f78479cf03a8c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Airline",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "Qantas",
+									"type": "text"
+								},
+								{
+									"key": "logo",
+									"type": "file",
+									"src": "/C:/Users/HP Envy/Downloads/1900s_1920_qantas_1.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/airlines",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airlines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Airlines",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/airlines",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airlines"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Airline",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/airlines/67cb6b153c2f78479cf03a8c",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airlines",
+								"67cb6b153c2f78479cf03a8c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Airline",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5000/api/airlines/67cb5f58dca03a44415c1dbe",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"airlines",
+								"67cb5f58dca03a44415c1dbe"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "All Locations in Sky-Stream"
+		},
+		{
+			"name": "Flight Class Type",
+			"item": [
+				{
+					"name": "Add Class type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"type\": \"First Class\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/flightsClasses",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flightsClasses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Class types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/flightsClasses",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flightsClasses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Class type",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/flightsClasses/67cb7922d426a160e0cd6fa0",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flightsClasses",
+								"67cb7922d426a160e0cd6fa0"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Class type",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5000/api/flightsClasses/67cb7922d426a160e0cd6fa0",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flightsClasses",
+								"67cb7922d426a160e0cd6fa0"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Class type",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/flightsClasses/67cb7922d426a160e0cd6fa0",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flightsClasses",
+								"67cb7922d426a160e0cd6fa0"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "All Locations in Sky-Stream"
+		},
+		{
+			"name": "Hotels",
+			"item": [
+				{
+					"name": "Add Hotel",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Hotel The Leschanze\n",
+									"type": "text"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/HP Envy/Downloads/211399892.jpg"
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": [
+										"/C:/Users/HP Envy/Downloads/211399954.jpg",
+										"/C:/Users/HP Envy/Downloads/211399892.jpg",
+										"/C:/Users/HP Envy/Downloads/211399922.jpg",
+										"/C:/Users/HP Envy/Downloads/211398316.jpg",
+										"/C:/Users/HP Envy/Downloads/212052074.jpg",
+										"/C:/Users/HP Envy/Downloads/211399988.jpg",
+										"/C:/Users/HP Envy/Downloads/211399999.jpg"
+									]
+								},
+								{
+									"key": "description",
+									"value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec consequat semper leo. Maecenas vulputate odio ante, non vulputate sem pellentesque eget. Etiam ac magna eu lorem blandit consequat.",
+									"type": "text"
+								},
+								{
+									"key": "city",
+									"value": "67cb6220f260fe5c0d7a3a0c",
+									"description": "Should be Id of city(Not name)",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "3-C3 Noor Jahan Road Gulberg-3, Gulberg, 54000 Lahore, Pakistan",
+									"type": "text"
+								},
+								{
+									"key": "location[type]",
+									"value": "Point",
+									"description": "Type must be Point",
+									"type": "text"
+								},
+								{
+									"key": "location[coordinates]",
+									"value": "-60.1918",
+									"description": "longitude",
+									"type": "text"
+								},
+								{
+									"key": "location[coordinates]",
+									"value": "15.7617",
+									"description": "latitude",
+									"type": "text"
+								},
+								{
+									"key": "amenities[wifi]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[airCondition]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[fitnessCenter]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[deskSupport]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[restaurant]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[nonSmooking]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[swimmingPool]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "contact[phone]",
+									"value": "281-397-1060",
+									"type": "text"
+								},
+								{
+									"key": "contact[email]",
+									"value": "info@montecarlohotelhtx.com",
+									"type": "text"
+								},
+								{
+									"key": "policies[checkIn]",
+									"value": "12:00",
+									"description": "HH:mm",
+									"type": "text"
+								},
+								{
+									"key": "policies[checkOut]",
+									"value": "22:00",
+									"description": "HH:mm",
+									"type": "text"
+								},
+								{
+									"key": "policies[breakfastAvailable]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "policies[parkingAvailable]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "policies[petsAllowed]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "policies[kidsAllowed]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "otherImportantNotes",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/hotels",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add New Review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"submittedBy\": \"John 5 Star\", \"rating\": 5, \"comment\": \"WOW WOW WOW good experience!\" }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/new-review/67ccf5c0dc9573c4a307ffd7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"new-review",
+								"67ccf5c0dc9573c4a307ffd7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add New Provider",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"site\": \"Trip.com\",\r\n    \"siteLogo\": \"https://ak-d.tripcdn.com/images/05E5p12000cga1phzA0ED.webp\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/new-deal-provider/67ccf5c0dc9573c4a307ffd7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"new-deal-provider",
+								"67ccf5c0dc9573c4a307ffd7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add New Deal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"type\": \"Deluxe Double Room\",\r\n    \"noOfRooms\": 3,\r\n    \"maxPersonAllowed\": 9,\r\n    \"pricePerNight\": 300,\r\n    \"freeCancellation\": true,\r\n    \"breakfastIncluded\": true,\r\n    \"availableFrom\": \"2025-04-25T00:00:00Z\",\r\n    \"availableTo\": \"2025-05-10T00:00:00Z\",\r\n    \"bookingUrl\": \"https://www.booking.com/\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/new-deal/67ccf5c0dc9573c4a307ffd7/deals/67ccf5eedc9573c4a307ffe0",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"new-deal",
+								"67ccf5c0dc9573c4a307ffd7",
+								"deals",
+								"67ccf5eedc9573c4a307ffe0"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Hotels",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/hotels",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Fab City Hotels",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/getFabCityHotels",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"getFabCityHotels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Hotel",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/67ccd4dadc9573c4a307fecf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"67ccd4dadc9573c4a307fecf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Hotel",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/67ccd4dadc9573c4a307fecf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"67ccd4dadc9573c4a307fecf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Hotels Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/getHotelsStats",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"getHotelsStats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Hotels",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/search?name=keyword&country=GR&city=ATH&latitude=&longitude=&rating=4&minReview=3.2&noOfRooms=5&noOfPersons=5&freeCancellation=true&breakfastIncluded=false&availableFrom=2025-03-20T00:00:00.000Z&availableTo=2025-05-26T00:00:00.000Z",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "keyword"
+								},
+								{
+									"key": "country",
+									"value": "GR"
+								},
+								{
+									"key": "city",
+									"value": "ATH"
+								},
+								{
+									"key": "latitude",
+									"value": "",
+									"description": "// 50 km radius"
+								},
+								{
+									"key": "longitude",
+									"value": "",
+									"description": "// 50 km radius"
+								},
+								{
+									"key": "rating",
+									"value": "4",
+									"description": "Exact Rating"
+								},
+								{
+									"key": "minReview",
+									"value": "3.2"
+								},
+								{
+									"key": "noOfRooms",
+									"value": "5",
+									"description": "Total rooms required"
+								},
+								{
+									"key": "noOfPersons",
+									"value": "5",
+									"description": "Number of persons "
+								},
+								{
+									"key": "freeCancellation",
+									"value": "true",
+									"description": "true/false"
+								},
+								{
+									"key": "breakfastIncluded",
+									"value": "false"
+								},
+								{
+									"key": "availableFrom",
+									"value": "2025-03-20T00:00:00.000Z"
+								},
+								{
+									"key": "availableTo",
+									"value": "2025-05-26T00:00:00.000Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Hotel",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Hotel The Leschanze\n",
+									"type": "text"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/HP Envy/Downloads/211399892.jpg",
+									"disabled": true
+								},
+								{
+									"key": "images",
+									"type": "file",
+									"src": [
+										"/C:/Users/HP Envy/Downloads/211399954.jpg",
+										"/C:/Users/HP Envy/Downloads/211399892.jpg",
+										"/C:/Users/HP Envy/Downloads/211399922.jpg",
+										"/C:/Users/HP Envy/Downloads/211398316.jpg",
+										"/C:/Users/HP Envy/Downloads/212052074.jpg",
+										"/C:/Users/HP Envy/Downloads/211399988.jpg",
+										"/C:/Users/HP Envy/Downloads/211399999.jpg"
+									],
+									"disabled": true
+								},
+								{
+									"key": "description",
+									"value": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec consequat semper leo. Maecenas vulputate odio ante, non vulputate sem pellentesque eget. Etiam ac magna eu lorem blandit consequat.",
+									"type": "text"
+								},
+								{
+									"key": "city",
+									"value": "67cb6220f260fe5c0d7a3a0c",
+									"description": "Should be Id of city(Not name)",
+									"type": "text"
+								},
+								{
+									"key": "address",
+									"value": "3-C3 Noor Jahan Road Gulberg-3, Gulberg, 54000 Lahore, Pakistan",
+									"type": "text"
+								},
+								{
+									"key": "location[type]",
+									"value": "Point",
+									"description": "Type must be Point",
+									"type": "text"
+								},
+								{
+									"key": "location[coordinates]",
+									"value": "-60.1918",
+									"description": "longitude",
+									"type": "text"
+								},
+								{
+									"key": "location[coordinates]",
+									"value": "15.7617",
+									"description": "latitude",
+									"type": "text"
+								},
+								{
+									"key": "amenities[wifi]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[airCondition]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[fitnessCenter]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[deskSupport]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[restaurant]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[nonSmooking]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "amenities[swimmingPool]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "contact[phone]",
+									"value": "281-397-1060",
+									"type": "text"
+								},
+								{
+									"key": "contact[email]",
+									"value": "info@montecarlohotelhtx.com",
+									"type": "text"
+								},
+								{
+									"key": "policies[checkIn]",
+									"value": "12:00",
+									"description": "HH:mm",
+									"type": "text"
+								},
+								{
+									"key": "policies[checkOut]",
+									"value": "22:00",
+									"description": "HH:mm",
+									"type": "text"
+								},
+								{
+									"key": "policies[breakfastAvailable]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "policies[parkingAvailable]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "policies[petsAllowed]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "policies[kidsAllowed]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "otherImportantNotes",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/67ccd4dadc9573c4a307fecf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"67ccd4dadc9573c4a307fecf"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Flights",
+			"item": [
+				{
+					"name": "Get All Flights",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/flights",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Fav Flights",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5000/api/flights",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flight",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/flights/67cf718d831254b8bea07105",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights",
+								"67cf718d831254b8bea07105"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Flight",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/D:/projects/temp/skystream-website/frontend/src/Components/Assets/athens.png"
+								},
+								{
+									"key": "outboundAirline",
+									"value": "67cb7728d426a160e0cd6f91",
+									"description": "Must me Airline Id not name",
+									"type": "text"
+								},
+								{
+									"key": "twoWay",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "returnAirline",
+									"value": "67cb777ad426a160e0cd6f95",
+									"description": "Must me Airline Id not name",
+									"type": "text"
+								},
+								{
+									"key": "flightNumber",
+									"value": "K-105",
+									"type": "text"
+								},
+								{
+									"key": "location[outboundDirect]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "location[outboundStops][0][stopAtCity]",
+									"value": "67cb6220f260fe5c0d7a3a0b",
+									"description": "Must be Location id not name",
+									"type": "text"
+								},
+								{
+									"key": "location[outboundStops][0][stopAtAirport]",
+									"value": "67cb6b153c2f78479cf03a8c",
+									"description": "Must be airport id not name",
+									"type": "text"
+								},
+								{
+									"key": "location[outboundStops][1][stopAtCity]",
+									"value": "67cb6220f260fe5c0d7a3a0c",
+									"description": "Must be Location id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[outboundStops][1][stopAtAirport]",
+									"value": "67cb6f24d426a160e0cd6f52",
+									"description": "Must be airport id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[returnDirect]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "location[returnStops][0][stopAtCity]",
+									"value": "67cb6220f260fe5c0d7a3a0b",
+									"description": "Must be Location id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[returnStops][0][stopAtAirport]",
+									"value": "67cb6b153c2f78479cf03a8c",
+									"description": "Must be airport id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[returnStops][1][stopAtCity]",
+									"value": "67cb6220f260fe5c0d7a3a0c",
+									"description": "Must be Location id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[returnStops][1][stopAtAirport]",
+									"value": "67cb6f24d426a160e0cd6f52",
+									"description": "Must be airport id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[departureCity]",
+									"value": "67cb6220f260fe5c0d7a3a10",
+									"description": "Must be Location Id",
+									"type": "text"
+								},
+								{
+									"key": "location[departureAirport]",
+									"value": "67cb6f24d426a160e0cd6f52",
+									"description": "Must be airport id not name",
+									"type": "text"
+								},
+								{
+									"key": "location[arrivalCity]",
+									"value": "67cb6220f260fe5c0d7a3a15",
+									"description": "Must be Location Id",
+									"type": "text"
+								},
+								{
+									"key": "location[arrivalAirport]",
+									"value": "67cb6fedd426a160e0cd6f58",
+									"description": "Must be airport id not name",
+									"type": "text"
+								},
+								{
+									"key": "schedule[departureTime]",
+									"value": "2025-03-18T00:00:00Z",
+									"description": "Must be date",
+									"type": "text"
+								},
+								{
+									"key": "schedule[arrivalTime]",
+									"value": "2025-03-19T00:00:00Z",
+									"description": "Must be Date",
+									"type": "text"
+								},
+								{
+									"key": "schedule[returnDepartureTime]",
+									"value": "2025-03-20T00:00:00Z",
+									"description": "Must be Date",
+									"type": "text"
+								},
+								{
+									"key": "schedule[returnArrivalTime]",
+									"value": "2025-03-21T00:00:00Z",
+									"description": "Must be Date",
+									"type": "text"
+								},
+								{
+									"key": "frequency[0]",
+									"value": "Monday",
+									"type": "text"
+								},
+								{
+									"key": "frequency[1]",
+									"value": "Wednesday",
+									"type": "text"
+								},
+								{
+									"key": "classes[0][classType]",
+									"value": "67cb7922d426a160e0cd6fa0",
+									"description": "Must be FlightClassType id",
+									"type": "text"
+								},
+								{
+									"key": "classes[0][price]",
+									"value": "250",
+									"description": "Price",
+									"type": "text"
+								},
+								{
+									"key": "classes[0][vacancy]",
+									"value": "20",
+									"description": "Number of Seats in Selected Class",
+									"type": "text"
+								},
+								{
+									"key": "selfTransfer",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "externalURL",
+									"value": "http://booking.com/",
+									"description": "Booking url",
+									"type": "text"
+								},
+								{
+									"key": "additionalInfo",
+									"value": "",
+									"description": "additional Info",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/flights/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Flight",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/D:/projects/temp/skystream-website/frontend/src/Components/Assets/athens.png"
+								},
+								{
+									"key": "outboundAirline",
+									"value": "67cb7728d426a160e0cd6f91",
+									"description": "Must me Airline Id not name",
+									"type": "text"
+								},
+								{
+									"key": "twoWay",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "returnAirline",
+									"value": "67cb777ad426a160e0cd6f95",
+									"description": "Must me Airline Id not name",
+									"type": "text"
+								},
+								{
+									"key": "flightNumber",
+									"value": "K-105",
+									"type": "text"
+								},
+								{
+									"key": "location[outboundDirect]",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "location[outboundStops][0][stopAtCity]",
+									"value": "67cb6220f260fe5c0d7a3a0b",
+									"description": "Must be Location id not name",
+									"type": "text"
+								},
+								{
+									"key": "location[outboundStops][0][stopAtAirport]",
+									"value": "67cb6b153c2f78479cf03a8c",
+									"description": "Must be airport id not name",
+									"type": "text"
+								},
+								{
+									"key": "location[outboundStops][1][stopAtCity]",
+									"value": "67cb6220f260fe5c0d7a3a0c",
+									"description": "Must be Location id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[outboundStops][1][stopAtAirport]",
+									"value": "67cb6f24d426a160e0cd6f52",
+									"description": "Must be airport id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[returnDirect]",
+									"value": "true",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "location[returnStops][0][stopAtCity]",
+									"value": "67cb6220f260fe5c0d7a3a0b",
+									"description": "Must be Location id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[returnStops][0][stopAtAirport]",
+									"value": "67cb6b153c2f78479cf03a8c",
+									"description": "Must be airport id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[returnStops][1][stopAtCity]",
+									"value": "67cb6220f260fe5c0d7a3a0c",
+									"description": "Must be Location id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[returnStops][1][stopAtAirport]",
+									"value": "67cb6f24d426a160e0cd6f52",
+									"description": "Must be airport id not name",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "location[departureCity]",
+									"value": "67cb6220f260fe5c0d7a3a10",
+									"description": "Must be Location Id",
+									"type": "text"
+								},
+								{
+									"key": "location[departureAirport]",
+									"value": "67cb6f24d426a160e0cd6f52",
+									"description": "Must be airport id not name",
+									"type": "text"
+								},
+								{
+									"key": "location[arrivalCity]",
+									"value": "67cb6220f260fe5c0d7a3a15",
+									"description": "Must be Location Id",
+									"type": "text"
+								},
+								{
+									"key": "location[arrivalAirport]",
+									"value": "67cb6fedd426a160e0cd6f58",
+									"description": "Must be airport id not name",
+									"type": "text"
+								},
+								{
+									"key": "schedule[departureTime]",
+									"value": "2025-03-18T00:00:00Z",
+									"description": "Must be date",
+									"type": "text"
+								},
+								{
+									"key": "schedule[arrivalTime]",
+									"value": "2025-03-19T00:00:00Z",
+									"description": "Must be Date",
+									"type": "text"
+								},
+								{
+									"key": "schedule[returnDepartureTime]",
+									"value": "2025-03-20T00:00:00Z",
+									"description": "Must be Date",
+									"type": "text"
+								},
+								{
+									"key": "schedule[returnArrivalTime]",
+									"value": "2025-03-21T00:00:00Z",
+									"description": "Must be Date",
+									"type": "text"
+								},
+								{
+									"key": "frequency[0]",
+									"value": "Monday",
+									"type": "text"
+								},
+								{
+									"key": "frequency[1]",
+									"value": "Wednesday",
+									"type": "text"
+								},
+								{
+									"key": "classes[0][classType]",
+									"value": "67cb7922d426a160e0cd6fa0",
+									"description": "Must be FlightClassType id",
+									"type": "text"
+								},
+								{
+									"key": "classes[0][price]",
+									"value": "250",
+									"description": "Price",
+									"type": "text"
+								},
+								{
+									"key": "classes[0][vacancy]",
+									"value": "20",
+									"description": "Number of Seats in Selected Class",
+									"type": "text"
+								},
+								{
+									"key": "selfTransfer",
+									"value": "false",
+									"description": "true/false",
+									"type": "text"
+								},
+								{
+									"key": "externalURL",
+									"value": "http://booking.com/",
+									"description": "Booking url",
+									"type": "text"
+								},
+								{
+									"key": "additionalInfo",
+									"value": "",
+									"description": "additional Info",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/flights/67cf718d831254b8bea07105",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights",
+								"67cf718d831254b8bea07105"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Flight",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5000/api/flights/67cf718d831254b8bea07105",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights",
+								"67cf718d831254b8bea07105"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Flight",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/flights/search?oneway=false&originCountry=GB&originCity=CWL&destinationCountry=TR&destinationCity=IST&departureTime=2025-03-18T00:00:00.000Z&arrivalTime=2025-04-26T00:00:00.000Z&direct=true&outboundAirline=Air France&returnAirline=klm&flightNumber=K-10&frequency[0]=Monday&classType=Economy&vacancy=20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights",
+								"search"
+							],
+							"query": [
+								{
+									"key": "oneway",
+									"value": "false",
+									"description": "true/false"
+								},
+								{
+									"key": "originCountry",
+									"value": "GB",
+									"description": "country code "
+								},
+								{
+									"key": "originCity",
+									"value": "CWL",
+									"description": "City"
+								},
+								{
+									"key": "destinationCountry",
+									"value": "TR",
+									"description": "Country Code"
+								},
+								{
+									"key": "destinationCity",
+									"value": "IST",
+									"description": "City Code"
+								},
+								{
+									"key": "departureTime",
+									"value": "2025-03-18T00:00:00.000Z",
+									"description": "Must be date"
+								},
+								{
+									"key": "arrivalTime",
+									"value": "2025-04-26T00:00:00.000Z",
+									"description": "Must be date"
+								},
+								{
+									"key": "direct",
+									"value": "true",
+									"description": "true/false"
+								},
+								{
+									"key": "outboundAirline",
+									"value": "Air France",
+									"description": "Airline name"
+								},
+								{
+									"key": "returnAirline",
+									"value": "klm",
+									"description": "Airline name"
+								},
+								{
+									"key": "flightNumber",
+									"value": "K-10",
+									"description": "Flight number include"
+								},
+								{
+									"key": "frequency[0]",
+									"value": "Monday",
+									"description": "Match any of the specified days"
+								},
+								{
+									"key": "classType",
+									"value": "Economy",
+									"description": "Economy,Premium,Business Class,First Class"
+								},
+								{
+									"key": "vacancy",
+									"value": "20",
+									"description": "No of persons"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Show Interest",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3Y2I0ZjQyNjdlZGMyOWUxMmNhZDM0YiIsImlhdCI6MTc0MTM3OTk3MCwiZXhwIjoxNzcyNDgzOTcwfQ.Ijy6ZKU4znu5JhLGgjQEBotJF4JY9TLvrHoOrqPx8ms",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:5000/api/flights/showInterest/67cf718d831254b8bea07105",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights",
+								"showInterest",
+								"67cf718d831254b8bea07105"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
