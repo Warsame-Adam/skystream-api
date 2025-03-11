@@ -80,7 +80,9 @@ async function getFabCityHotels(req, res) {
   try {
     const matchedLocations = await LocationModel.find({ isFab: true });
     const locationIds = matchedLocations.map((loc) => loc._id);
-    const hotels = await HotelModel.find({ city: { $in: locationIds } });
+    const hotels = await HotelModel.find({
+      city: { $in: locationIds },
+    }).populate("city");
 
     return res.status(200).json({
       success: true,
