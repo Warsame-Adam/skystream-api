@@ -10,6 +10,8 @@ HotelRouter.get("/getHotelsStats", HotelService.getHotelsStats);
 
 HotelRouter.route("/").get(HotelService.getAllHotels);
 HotelRouter.route("/getFabCityHotels").get(HotelService.getFabCityHotels);
+HotelRouter.route("/recommendedHotels/:id").get(HotelService.getRelatedHotels);
+
 HotelRouter.get("/:id", HotelService.getHotelById);
 
 HotelRouter.use(protect);

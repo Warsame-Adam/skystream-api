@@ -382,6 +382,84 @@ async function getHotelsStats(req, res) {
     res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
+
+async function getRelatedHotels(req, res) {
+  const hotelId = req.params.id;
+  try {
+    // Step 1: Fetch Current Hotel
+    const currentHotel = await HotelModel.findById(hotelId).populate("city");
+    if (!currentHotel) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Requested Hotel not exist" });
+    }
+
+    const { city, deals } = currentHotel;
+
+    // Calculate Average Price (for recommended hotels)
+    const allPrices = deals.flatMap((deal) =>
+      deal.rooms.map((room) => room.pricePerNight)
+    );
+    const avgPrice = allPrices.length
+      ? allPrices.reduce((sum, price) => sum + price, 0) / allPrices.length
+      : 0;
+
+    const priceRange = {
+      $gte: avgPrice * 0.85, // 15% below
+      $lte: avgPrice * 1.15, // 15% above
+    };
+
+    // Step 2: Fetch Similar Hotels (Same City)
+    const similarHotelsData = await HotelModel.find({
+      city: city._id,
+      _id: { $ne: hotelId },
+    })
+      .limit(9)
+      .lean()
+      .populate("city");
+
+    // Step 3: Fetch Recommended Hotels (Similar Price, Same Country)
+    const sameCountryLocations = await LocationModel.find({
+      countryCode: city.countryCode,
+    }).select("_id");
+
+    const recommendedHotels = await HotelModel.find({
+      city: { $in: sameCountryLocations.map((x) => x._id) },
+      "deals.rooms.pricePerNight": priceRange,
+      _id: { $ne: hotelId },
+    })
+      .limit(9)
+      .lean()
+      .populate("city");
+
+    // Step 4: Fetch Popular Hotels (Highest Rating in Same Country)
+    const popularHotels = await HotelModel.find({
+      city: { $in: sameCountryLocations.map((x) => x._id) },
+      _id: { $ne: hotelId },
+    })
+      .sort({ "reviews.rating": -1 }) // Sort by highest rating
+      .limit(9)
+      .lean()
+      .populate("city");
+
+    res.status(200).json({
+      success: true,
+      data: {
+        doc: {
+          similarHotelsData,
+          recommendedHotels,
+          popularHotels,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching related hotels:", error);
+    return res
+      .status(404)
+      .json({ success: false, error: "Requested Hotel not exist" });
+  }
+}
+
 // * UPDATE HOTEL
 async function updateHotel(req, res) {
   try {
@@ -584,6 +662,7 @@ const HotelService = {
   getHotelById,
   getFabCityHotels,
   getHotelsBySearch,
+  getRelatedHotels,
   getHotelsStats,
   updateHotel,
   addNewReview,
