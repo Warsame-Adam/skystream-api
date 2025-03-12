@@ -148,7 +148,7 @@ async function externalLogin(req, res) {
         .json({ error: "Sorry! Application is not ready to register Users" });
 
     // CREATE AND SAVE NEW USER INSTANCE
-    const newUser = {
+    let newUser = {
       name,
       email,
       roles: [roleId._id],
