@@ -22,7 +22,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"cityName\": \"Paris\",\r\n    \"cityCode\": \"PAR\",\r\n    \"countryName\": \"France\",\r\n    \"countryCode\": \"FR\"\r\n}",
+							"raw": "{\r\n    \"cityName\": \"Paris\",\r\n    \"cityCode\": \"PAR\",\r\n    \"countryName\": \"France\",\r\n    \"countryCode\": \"FR\",\r\n    \"isFab\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -125,7 +125,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"cityName\": \"Pariss\",\r\n    \"cityCode\": \"PAR\",\r\n    \"countryName\": \"France\",\r\n    \"countryCode\": \"FR\"\r\n}",
+							"raw": "{\r\n    \"cityName\": \"Paris\",\r\n    \"cityCode\": \"PAR\",\r\n    \"countryName\": \"France\",\r\n    \"countryCode\": \"FR\",\r\n    \"isFab\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -133,7 +133,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:5000/api/locations/67cb5f58dca03a44415c1dbe",
+							"raw": "http://localhost:5000/api/locations/67cb6220f260fe5c0d7a3a13",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -142,7 +142,7 @@
 							"path": [
 								"api",
 								"locations",
-								"67cb5f58dca03a44415c1dbe"
+								"67cb6220f260fe5c0d7a3a13"
 							]
 						}
 					},
@@ -1008,6 +1008,28 @@
 					"response": []
 				},
 				{
+					"name": "Get recommended Hotels",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/hotels/recommendedHotels/67ccd4dadc9573c4a307fecf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"hotels",
+								"recommendedHotels",
+								"67ccd4dadc9573c4a307fecf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get Hotel",
 					"request": {
 						"method": "GET",
@@ -1352,7 +1374,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5000/api/flights",
+							"raw": "http://localhost:5000/api/flights/favoriteFlights",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1360,7 +1382,8 @@
 							"port": "5000",
 							"path": [
 								"api",
-								"flights"
+								"flights",
+								"favoriteFlights"
 							]
 						}
 					},
