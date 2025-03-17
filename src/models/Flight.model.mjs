@@ -2,9 +2,7 @@ import { Schema, model } from "mongoose";
 
 const flightSchema = new Schema(
   {
-    image: {
-      type: String,
-    },
+    image: String,
     outboundAirline: {
       type: Schema.Types.ObjectId,
       ref: "Airline",

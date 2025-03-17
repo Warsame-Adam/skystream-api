@@ -28,7 +28,7 @@ async function deleteFlight(req, res) {
 async function addFlight(req, res) {
   try {
     let flightData = req.body;
-    if (req?.file?.filname) flightData.image = req.file.filename;
+    if (req?.file?.filename) flightData.image = req.file.filename;
     if (flightData.location.outboundDirect === true) {
       flightData.location.outboundStops = [];
     }
@@ -43,6 +43,7 @@ async function addFlight(req, res) {
       flightData.schedule.returnDepartureTime = undefined;
       flightData.schedule.returnArrivalTime = undefined;
     }
+
     // CREATE AND SAVE NEW FLIGHT INSTANCE
     const doc = await FlightModel.create(flightData);
     if (!doc)
