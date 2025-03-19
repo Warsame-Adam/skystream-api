@@ -235,8 +235,8 @@ async function getFlightsBySearch(req, res) {
       "schedule.departureTime": { $gte: new Date() },
     };
 
-    if (oneway) {
-      filters.twoWay = false;
+    if (oneway !== undefined) {
+      filters.twoWay = oneway === "false" || oneway === "false" ? true : false;
     }
 
     if (direct !== undefined) {
