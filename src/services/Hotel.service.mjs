@@ -84,10 +84,38 @@ async function getFabCityHotels(req, res) {
       city: { $in: locationIds },
     }).populate("city");
 
+    // Step 3: Find one hotel per city with the lowest price
+    const bestHotelsPerLocation = new Map();
+    hotels.forEach((hotel) => {
+      const minDeal = hotel.deals
+        .flatMap((deal) => deal.rooms) // Flatten all rooms
+        .reduce(
+          (min, room) => (room.pricePerNight < min.pricePerNight ? room : min),
+          { pricePerNight: Infinity }
+        );
+
+      if (minDeal.pricePerNight === Infinity) return; // Skip if no valid deal
+
+      const cityId = hotel.city._id.toString();
+      if (
+        !bestHotelsPerLocation.has(cityId) ||
+        minDeal.pricePerNight < bestHotelsPerLocation.get(cityId).price
+      ) {
+        bestHotelsPerLocation.set(cityId, {
+          hotel,
+          price: minDeal.pricePerNight,
+        });
+      }
+    });
+    // Convert Map to an array of hotels
+    const bestHotels = Array.from(bestHotelsPerLocation.values()).map(
+      (entry) => entry.hotel
+    );
+
     return res.status(200).json({
       success: true,
       data: {
-        doc: hotels,
+        doc: bestHotels,
       },
     });
   } catch (error) {

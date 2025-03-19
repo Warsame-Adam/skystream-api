@@ -164,7 +164,9 @@ async function getMyFavoriteFlights(req, res) {
     // FETCH ALL FLIGHTS
     const flights = await FlightModel.find({
       _id: { $in: req.user.favouritedFlights },
-    });
+    }).populate(
+      "outboundAirline returnAirline location.departureCity location.arrivalCity location.departureAirport location.arrivalAirport classes.classType location.outboundStops.stopAtCity location.outboundStops.stopAtAirport location.returnStops.stopAtCity location.returnStops.stopAtAirport"
+    );
 
     // SEND RESPONSE WITH FLIGHTS DATA
     return res.status(200).json({
