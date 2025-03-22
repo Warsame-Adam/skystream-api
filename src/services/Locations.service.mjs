@@ -38,13 +38,15 @@ async function deleteLocation(req, res) {
 async function updateLocation(req, res) {
   try {
     const { cityName, cityCode, countryName, countryCode, isFab } = req.body;
-    const updatedObj = {};
 
+    const updatedObj = {};
     if (cityName) updatedObj.cityName = cityName;
     if (cityCode) updatedObj.cityCode = cityCode;
     if (countryName) updatedObj.countryName = countryName;
     if (countryCode) updatedObj.countryCode = countryCode;
     if (isFab !== undefined) updatedObj.isFab = isFab;
+    if (req?.file?.filename) updatedObj.cover = req.file.filename;
+
     const doc = await LocationModel.findByIdAndUpdate(
       req.params.id,
       updatedObj,
@@ -79,6 +81,7 @@ async function createOne(req, res) {
       countryName,
       countryCode,
       isFab: isFab !== undefined ? isFab : false,
+      cover: req.file.filename,
     });
     if (!doc)
       return res

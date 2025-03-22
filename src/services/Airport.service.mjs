@@ -73,7 +73,6 @@ async function updateAirport(req, res) {
 async function createOne(req, res) {
   try {
     const { name, location } = req.body;
-    console.log(location);
     const doc = await AirportModel.create({
       name,
       location,

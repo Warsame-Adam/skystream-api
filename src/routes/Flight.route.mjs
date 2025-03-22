@@ -8,6 +8,10 @@ import { Router } from "express";
 const FlightRoute = Router();
 
 FlightRoute.get("/search", FlightService.getFlightsBySearch);
+FlightRoute.get(
+  "/getCheapestFlightFromDestination",
+  FlightService.getCheapestFlightsPerCity
+);
 
 FlightRoute.route("/").get(FlightService.getAllFlights);
 

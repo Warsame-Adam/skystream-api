@@ -392,6 +392,79 @@ async function getFlightsBySearch(req, res) {
   }
 }
 
+async function getCheapestFlightsPerCity(req, res) {
+  try {
+    let { originCity, originCountry, departureTime } = req.query;
+    if (!departureTime) {
+      departureTime = new Date().toDateString();
+    }
+
+    if (!originCity || !originCountry) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required parameters" });
+    }
+    // Step 1: Find Departure City ID
+    const departureCity = await LocationModel.findOne({
+      countryCode: { $regex: originCountry, $options: "i" },
+      cityCode: { $regex: originCity, $options: "i" },
+    }).select("_id");
+
+    if (!departureCity) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Origin city not found" });
+    }
+
+    // Step 2: Fetch Flights from Origin City on or after the given date
+    const flights = await FlightModel.find({
+      "location.departureCity": departureCity._id,
+      "schedule.departureTime": { $gte: new Date(departureTime) },
+    }).populate(
+      "outboundAirline returnAirline location.departureCity location.arrivalCity location.departureAirport location.arrivalAirport classes.classType location.outboundStops.stopAtCity location.outboundStops.stopAtAirport location.returnStops.stopAtCity location.returnStops.stopAtAirport"
+    );
+
+    // Populate destination city details
+
+    // Step 3: Find cheapest flight per destination city
+    const cheapestFlights = new Map();
+
+    flights.forEach((flight) => {
+      const minClass = flight.classes.reduce(
+        (min, c) => (c.price < min.price ? c : min),
+        {
+          price: Infinity,
+        }
+      );
+
+      if (minClass.price === Infinity) return; // Skip if no valid price
+
+      const destinationId = flight.location.arrivalCity._id.toString();
+      if (
+        !cheapestFlights.has(destinationId) ||
+        minClass.price < cheapestFlights.get(destinationId).price
+      ) {
+        cheapestFlights.set(destinationId, { flight, price: minClass.price });
+      }
+    });
+
+    // Step 4: Convert Map to an array of flights
+    const resultFlights = Array.from(cheapestFlights.values()).map(
+      (entry) => entry.flight
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        doc: resultFlights,
+      },
+    });
+  } catch (error) {
+    console.error("ERROR FETCHING FLIGHTS:", error);
+    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
+  }
+}
+
 const FlightService = {
   deleteFlight,
   updateFlight,
@@ -400,6 +473,7 @@ const FlightService = {
   getMyFavoriteFlights,
   getFlightById,
   getFlightsBySearch,
+  getCheapestFlightsPerCity,
   showInterest,
 };
 

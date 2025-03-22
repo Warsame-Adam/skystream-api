@@ -21,13 +21,39 @@
 							}
 						],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"cityName\": \"Paris\",\r\n    \"cityCode\": \"PAR\",\r\n    \"countryName\": \"France\",\r\n    \"countryCode\": \"FR\",\r\n    \"isFab\": false\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "cityName",
+									"value": "Paris",
+									"type": "text"
+								},
+								{
+									"key": "cityCode",
+									"value": "PAR",
+									"type": "text"
+								},
+								{
+									"key": "countryName",
+									"value": "France",
+									"type": "text"
+								},
+								{
+									"key": "countryCode",
+									"value": "FR",
+									"type": "text"
+								},
+								{
+									"key": "isFab",
+									"value": "false",
+									"type": "text"
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": []
 								}
-							}
+							]
 						},
 						"url": {
 							"raw": "http://localhost:5000/api/locations",
@@ -70,7 +96,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5000/api/locations/67cb5f58dca03a44415c1dbe",
+							"raw": "http://localhost:5000/api/locations/67cb6220f260fe5c0d7a3a0b",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -79,7 +105,7 @@
 							"path": [
 								"api",
 								"locations",
-								"67cb5f58dca03a44415c1dbe"
+								"67cb6220f260fe5c0d7a3a0b"
 							]
 						}
 					},
@@ -124,16 +150,47 @@
 							}
 						],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"cityName\": \"Paris\",\r\n    \"cityCode\": \"PAR\",\r\n    \"countryName\": \"France\",\r\n    \"countryCode\": \"FR\",\r\n    \"isFab\": true\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "cityName",
+									"value": "Paris",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "cityCode",
+									"value": "PAR",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "countryName",
+									"value": "France",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "countryCode",
+									"value": "FR",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "isFab",
+									"value": "false",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "cover",
+									"type": "file",
+									"src": "/C:/Users/HP Envy/Downloads/download (1).jpg"
 								}
-							}
+							]
 						},
 						"url": {
-							"raw": "http://localhost:5000/api/locations/67cb6220f260fe5c0d7a3a13",
+							"raw": "http://localhost:5000/api/locations/67d86558ca8eef732fe21afb",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -142,7 +199,7 @@
 							"path": [
 								"api",
 								"locations",
-								"67cb6220f260fe5c0d7a3a13"
+								"67d86558ca8eef732fe21afb"
 							]
 						}
 					},
@@ -1374,7 +1431,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5000/api/flights/favoriteFlights",
+							"raw": "http://localhost:5000/api/flights/",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1383,7 +1440,7 @@
 							"path": [
 								"api",
 								"flights",
-								"favoriteFlights"
+								""
 							]
 						}
 					},
@@ -1401,7 +1458,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:5000/api/flights",
+							"raw": "http://localhost:5000/api/flights/favoriteFlights",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1409,7 +1466,8 @@
 							"port": "5000",
 							"path": [
 								"api",
-								"flights"
+								"flights",
+								"favoriteFlights"
 							]
 						}
 					},
@@ -1453,7 +1511,7 @@
 								{
 									"key": "image",
 									"type": "file",
-									"src": "/D:/projects/temp/skystream-website/frontend/src/Components/Assets/athens.png"
+									"src": "/D:/projects/temp/skystream-website/frontend/src/Components/Assets/dubai.png"
 								},
 								{
 									"key": "outboundAirline",
@@ -1475,7 +1533,7 @@
 								},
 								{
 									"key": "flightNumber",
-									"value": "K-105",
+									"value": "K-135",
 									"type": "text"
 								},
 								{
@@ -1546,7 +1604,7 @@
 								},
 								{
 									"key": "location[departureCity]",
-									"value": "67cb6220f260fe5c0d7a3a10",
+									"value": "67d86558ca8eef732fe21afb",
 									"description": "Must be Location Id",
 									"type": "text"
 								},
@@ -1570,25 +1628,25 @@
 								},
 								{
 									"key": "schedule[departureTime]",
-									"value": "2025-03-18T00:00:00Z",
+									"value": "2025-03-25T00:00:00Z",
 									"description": "Must be date",
 									"type": "text"
 								},
 								{
 									"key": "schedule[arrivalTime]",
-									"value": "2025-03-19T00:00:00Z",
+									"value": "2025-03-26T00:00:00Z",
 									"description": "Must be Date",
 									"type": "text"
 								},
 								{
 									"key": "schedule[returnDepartureTime]",
-									"value": "2025-03-20T00:00:00Z",
+									"value": "2025-03-27T00:00:00Z",
 									"description": "Must be Date",
 									"type": "text"
 								},
 								{
 									"key": "schedule[returnArrivalTime]",
-									"value": "2025-03-21T00:00:00Z",
+									"value": "2025-03-28T00:00:00Z",
 									"description": "Must be Date",
 									"type": "text"
 								},
@@ -1909,7 +1967,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:5000/api/flights/search?oneway=false&originCountry=GB&originCity=CWL&destinationCountry=TR&destinationCity=IST&departureTime=2025-03-18T00:00:00.000Z&arrivalTime=2025-04-26T00:00:00.000Z&direct=true&outboundAirline=Air France&returnAirline=klm&flightNumber=K-10&frequency[0]=Monday&classType=Economy&vacancy=20",
+							"raw": "http://localhost:5000/api/flights/search?originCountry=UK&originCity=LDN",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1924,72 +1982,89 @@
 								{
 									"key": "oneway",
 									"value": "false",
-									"description": "true/false"
+									"description": "true/false",
+									"disabled": true
 								},
 								{
 									"key": "originCountry",
-									"value": "GB",
+									"value": "UK",
 									"description": "country code "
 								},
 								{
 									"key": "originCity",
-									"value": "CWL",
+									"value": "LDN",
 									"description": "City"
 								},
 								{
 									"key": "destinationCountry",
 									"value": "TR",
-									"description": "Country Code"
+									"description": "Country Code",
+									"disabled": true
 								},
 								{
 									"key": "destinationCity",
 									"value": "IST",
-									"description": "City Code"
+									"description": "City Code",
+									"disabled": true
 								},
 								{
 									"key": "departureTime",
 									"value": "2025-03-18T00:00:00.000Z",
-									"description": "Must be date"
+									"description": "Must be date",
+									"disabled": true
 								},
 								{
 									"key": "arrivalTime",
 									"value": "2025-04-26T00:00:00.000Z",
-									"description": "Must be date"
+									"description": "Must be date",
+									"disabled": true
 								},
 								{
 									"key": "direct",
 									"value": "true",
-									"description": "true/false"
+									"description": "true/false",
+									"disabled": true
 								},
 								{
 									"key": "outboundAirline",
 									"value": "Air France",
-									"description": "Airline name"
+									"description": "Airline name",
+									"disabled": true
 								},
 								{
 									"key": "returnAirline",
 									"value": "klm",
-									"description": "Airline name"
+									"description": "Airline name",
+									"disabled": true
 								},
 								{
 									"key": "flightNumber",
 									"value": "K-10",
-									"description": "Flight number include"
+									"description": "Flight number include",
+									"disabled": true
 								},
 								{
 									"key": "frequency[0]",
 									"value": "Monday",
-									"description": "Match any of the specified days"
+									"description": "Match any of the specified days",
+									"disabled": true
 								},
 								{
 									"key": "classType",
 									"value": "Economy",
-									"description": "Economy,Premium,Business Class,First Class"
+									"description": "Economy,Premium,Business Class,First Class",
+									"disabled": true
 								},
 								{
 									"key": "vacancy",
 									"value": "20",
-									"description": "No of persons"
+									"description": "No of persons",
+									"disabled": true
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
 								}
 							]
 						}
@@ -2019,6 +2094,116 @@
 								"flights",
 								"showInterest",
 								"67cf718d831254b8bea07105"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cheapest Flight From Destination",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:5000/api/flights/getCheapestFlightFromDestination?originCountry=UK&originCity=LDN",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"flights",
+								"getCheapestFlightFromDestination"
+							],
+							"query": [
+								{
+									"key": "oneway",
+									"value": "false",
+									"description": "true/false",
+									"disabled": true
+								},
+								{
+									"key": "originCountry",
+									"value": "UK",
+									"description": "country code "
+								},
+								{
+									"key": "originCity",
+									"value": "LDN",
+									"description": "City"
+								},
+								{
+									"key": "destinationCountry",
+									"value": "TR",
+									"description": "Country Code",
+									"disabled": true
+								},
+								{
+									"key": "destinationCity",
+									"value": "IST",
+									"description": "City Code",
+									"disabled": true
+								},
+								{
+									"key": "departureTime",
+									"value": "2025-03-18T00:00:00.000Z",
+									"description": "Must be date",
+									"disabled": true
+								},
+								{
+									"key": "arrivalTime",
+									"value": "2025-04-26T00:00:00.000Z",
+									"description": "Must be date",
+									"disabled": true
+								},
+								{
+									"key": "direct",
+									"value": "true",
+									"description": "true/false",
+									"disabled": true
+								},
+								{
+									"key": "outboundAirline",
+									"value": "Air France",
+									"description": "Airline name",
+									"disabled": true
+								},
+								{
+									"key": "returnAirline",
+									"value": "klm",
+									"description": "Airline name",
+									"disabled": true
+								},
+								{
+									"key": "flightNumber",
+									"value": "K-10",
+									"description": "Flight number include",
+									"disabled": true
+								},
+								{
+									"key": "frequency[0]",
+									"value": "Monday",
+									"description": "Match any of the specified days",
+									"disabled": true
+								},
+								{
+									"key": "classType",
+									"value": "Economy",
+									"description": "Economy,Premium,Business Class,First Class",
+									"disabled": true
+								},
+								{
+									"key": "vacancy",
+									"value": "20",
+									"description": "No of persons",
+									"disabled": true
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
 							]
 						}
 					},

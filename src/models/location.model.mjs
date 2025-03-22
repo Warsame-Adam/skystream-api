@@ -2,6 +2,10 @@ import { Schema, model } from "mongoose";
 
 const citiesSchema = new Schema(
   {
+    cover: {
+      type: String,
+      required: [true, "Location Main Image is required"],
+    },
     cityName: {
       type: String,
       required: [true, "City name is required"],
