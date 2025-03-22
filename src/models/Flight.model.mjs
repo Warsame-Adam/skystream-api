@@ -108,6 +108,14 @@ const flightSchema = new Schema(
       departureTime: {
         type: Date,
         required: [true, "Departure time is required"],
+        validate: {
+          validator: function (value) {
+            return (
+              !this.schedule.arrivalTime || value < this.schedule.arrivalTime
+            );
+          },
+          message: "Departure time must be before arrival time",
+        },
       },
       arrivalTime: {
         type: Date,
@@ -117,6 +125,15 @@ const flightSchema = new Schema(
         type: Date,
         required: function () {
           return this.twoWay === true, "Return Departure time is required";
+        },
+        validate: {
+          validator: function (value) {
+            return (
+              !this.schedule.returnArrivalTime ||
+              value < this.schedule.returnArrivalTime
+            );
+          },
+          message: "Return Departure time must be before Return Arrival time",
         },
       },
       returnArrivalTime: {
