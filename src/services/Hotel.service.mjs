@@ -528,18 +528,24 @@ async function updateHotel(req, res) {
 // Add a Review to a Hotel
 async function addNewReview(req, res) {
   try {
-    const { submittedBy, rating, comment } = req.body;
     const hotelId = req.params.hotelId;
+    
+    const incomingReviews = Array.isArray(req.body) ? req.body : [req.body];
 
-    if (!submittedBy || !rating) {
-      return res
-        .status(400)
-        .json({ success: false, error: "User and rating are required" });
+    
+    for (const review of incomingReviews) {
+      if (!review.submittedBy || !review.rating) {
+        return res.status(400).json({
+          success: false,
+          error: "Each review must have submittedBy and rating fields",
+        });
+      }
     }
 
+    
     const updatedHotel = await HotelModel.findByIdAndUpdate(
       hotelId,
-      { $push: { reviews: { submittedBy, rating, comment } } },
+      { $push: { reviews: { $each: incomingReviews } } },
       { new: true }
     );
 
@@ -552,7 +558,7 @@ async function addNewReview(req, res) {
 
     res.status(200).json({
       success: true,
-      message: "Review added successfully",
+      message: "Review(s) added successfully",
       data: {
         doc: updatedHotel,
       },

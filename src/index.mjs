@@ -58,7 +58,10 @@ app.use("/api/airlines", airlineRoutes);
 app.use("/api/airports", airportRoutes);
 app.use("/api/flightsClasses", classTypeRoutes);
 app.use("/api/flights", flightRoutes);
+
+
 app.use("/api/hotels", hotelRoutes);
+
 
 app.use(function (request, response, next) {
   if (process.env.NODE_ENV != "development" && !request.secure) {
