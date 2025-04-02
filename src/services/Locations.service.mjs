@@ -45,7 +45,7 @@ async function updateLocation(req, res) {
     if (countryName) updatedObj.countryName = countryName;
     if (countryCode) updatedObj.countryCode = countryCode;
     if (isFab !== undefined) updatedObj.isFab = isFab;
-    if (req?.file?.filename) updatedObj.cover = req.file.filename;
+    if (req?.file?.path) updatedObj.cover = req.file.path;
 
     const doc = await LocationModel.findByIdAndUpdate(
       req.params.id,
@@ -81,7 +81,7 @@ async function createOne(req, res) {
       countryName,
       countryCode,
       isFab: isFab !== undefined ? isFab : false,
-      cover: req.file.filename,
+      cover: req.file.path,
     });
     if (!doc)
       return res

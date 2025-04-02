@@ -14,11 +14,12 @@ AirlinesRoute.use(protect);
 
 AirlinesRoute.route("/")
   .delete(AirlinesService.deleteAirline)
-  .post(imageUpload("/airlines").single("logo"), AirlinesService.createOne);
+  .post(imageUpload.single("logo"), AirlinesService.createOne);
 AirlinesRoute.patch(
   "/:id",
-  imageUpload("/airlines").single("logo"),
+  imageUpload.single("logo"),
   AirlinesService.updateAirline
 );
 
 export default AirlinesRoute;
+

@@ -105,7 +105,7 @@ function generatePrice(min, max) {
 function generateFlights() {
   const flights = [];
   let flightNumber = 1000;
-  let currentDate = addDays(new Date(), 5);
+  let currentDate = addDays(new Date(), 3);
   const endDate = currentDate;
 
 
@@ -175,7 +175,7 @@ function generateFlights() {
           },
           frequency: randomFreq,
           classes: selectedClasses,
-          imageName: `${destination.name.toLowerCase()}.png`,
+          destinationName: destination.name,
         };
 
         if (!outboundDirect) {
@@ -200,8 +200,11 @@ async function createFlight(flight) {
 
   const form = new FormData();
 
-  console.log("🟢 About to append image:", `./src/public/files/flights/${flight.imageName}`);
-  form.append("image", fs.createReadStream(`./src/public/files/flights/${flight.imageName}`));
+  console.log("🟢 About to append image:", `./src/public/files/flights/${flight.destinationName}`);
+  form.append("folder", "flights");
+  const imagePath = `./src/public/files/flights/${flight.destinationName.toLowerCase()}.png`;
+  form.append("image", fs.createReadStream(imagePath));
+
   console.log("🟢 Appended image successfully");
 
   console.log("🟢 OutboundAirline:", flight.outboundAirline);

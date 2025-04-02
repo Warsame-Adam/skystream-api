@@ -26,9 +26,11 @@ async function deleteFlight(req, res) {
 
 // * ADD A NEW FLIGHT
 async function addFlight(req, res) {
+  console.log("📦 req.body:", req.body);
+  console.log("🖼️ req.file:", req.file);
   try {
     let flightData = req.body;
-    if (req?.file?.filename) flightData.image = req.file.filename;
+    if (req?.file?.path) flightData.image = req.file.path;
     if (flightData.location.outboundDirect === true) {
       flightData.location.outboundStops = [];
     }
@@ -69,7 +71,7 @@ async function addFlight(req, res) {
 async function updateFlight(req, res) {
   try {
     let flightData = req.body;
-    if (req?.file?.filname) flightData.image = req.file.filename;
+    if (req?.file?.path) flightData.image = req.file.path;
     if (flightData.twoWay === true) {
       if (flightData?.location?.returnDirect === true) {
         flightData.location.returnStops = [];
@@ -478,3 +480,5 @@ const FlightService = {
 };
 
 export default FlightService;
+
+       

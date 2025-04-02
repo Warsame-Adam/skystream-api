@@ -14,10 +14,10 @@ AirportRoute.route("/").get(AirportService.getAll);
 AirportRoute.use(protect);
 AirportRoute.route("/")
   .delete(AirportService.deleteAirport)
-  .post(imageUpload("/airports").single("logo"), AirportService.createOne);
+  .post(imageUpload.single("logo"), AirportService.createOne);
 AirportRoute.patch(
   "/:id",
-  imageUpload("/airports").single("logo"),
+  imageUpload.single("logo"),
   AirportService.updateAirport
 );
 

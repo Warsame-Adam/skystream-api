@@ -13,15 +13,16 @@ LocationRoute.route("/").get(LocationsService.getAll);
 
 LocationRoute.use(protect);
 LocationRoute.route("/").post(
-  imageUpload("/locations").single("cover"),
+  imageUpload.single("cover"),
   LocationsService.createOne
 );
 
 LocationRoute.route("/:id")
   .patch(
-    imageUpload("/locations").single("cover"),
+    imageUpload.single("cover"),
     LocationsService.updateLocation
   )
   .delete(LocationsService.deleteLocation);
 
 export default LocationRoute;
+

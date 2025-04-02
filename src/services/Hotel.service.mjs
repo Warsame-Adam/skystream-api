@@ -5,38 +5,47 @@ import parseDate from "../utils/parseDate.mjs";
 async function createHotel(req, res) {
   try {
     let hotelData = req.body;
+
+    console.log("📥 Incoming hotel data:", req.body);
+    console.log("🖼️ Cover image from file upload:", req.files?.cover);
+
+    // Remove client-sent fields that shouldn't be stored
     delete hotelData["reviews"];
     delete hotelData["deals"];
 
-    if (req.files.cover && req.files.cover.length > 0)
-      hotelData.cover = req.files.cover[0].filename;
-    else
-      res
-        .status(500)
-        .json({ success: false, error: "Cover Image is Required" });
+    if (!hotelData.cover || !hotelData.images || hotelData.images.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Cover image and at least one hotel image are required",
+      });
+    }
 
-    if (req.files.images && req.files.images.length > 0)
-      hotelData.images = req.files.images.map((x) => x.filename);
-    else res.status(500).json({ success: false, error: "Images are required" });
+    console.log("🧾 Attempting to create hotel with payload:", hotelData);
 
-    // CREATE AND SAVE A NEW HOTEL
     const doc = await HotelModel.create(hotelData);
-    if (!doc)
-      return res
-        .status(500)
-        .json({ success: false, error: "Requested Hotel not created" });
+
+    if (!doc) {
+      return res.status(500).json({
+        success: false,
+        error: "Requested Hotel not created",
+      });
+    }
 
     res.status(200).json({
       success: true,
-      data: {
-        doc,
-      },
+      data: doc,
     });
   } catch (error) {
-    console.error("ERROR CREATING HOTEL:", error);
-    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
+    console.error("🔥 ERROR CREATING HOTEL:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.errors || error.response?.data || "Unknown error",
+    });
   }
 }
+
+
 
 // * GET ALL HOTELS
 async function getAllHotels(req, res) {
@@ -501,7 +510,7 @@ async function updateHotel(req, res) {
 
     if (req.files.images && req.files.images.length > 0)
       updateData.$push = {
-        images: { $each: req.files.images.map((file) => file.filename) },
+        images: { $each: req.files.images.map((file) => file.path) },
       };
 
     const doc = await HotelModel.findByIdAndUpdate(hotelId, updateData, {
@@ -574,81 +583,66 @@ async function addNewReview(req, res) {
 //Add a New Deal Provider with Empty Rooms
 async function addNewDealProvider(req, res) {
   try {
-    const { site, siteLogo } = req.body;
     const hotelId = req.params.hotelId;
+    const providers = Array.isArray(req.body) ? req.body : [req.body];
 
-    if (!site || !siteLogo) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Site and Site Logo are required" });
-    }
-
-    const newDeal = { site, siteLogo, rooms: [] };
+    const formatted = providers.map((p) => ({
+      site: p.site,
+      siteLogo: p.siteLogo,
+      rooms: [],
+    }));
 
     const updatedHotel = await HotelModel.findByIdAndUpdate(
       hotelId,
-      { $push: { deals: newDeal } },
+      { $push: { deals: { $each: formatted } } },
       { new: true }
     );
 
-    if (!updatedHotel) {
-      return res.status(404).json({ success: false, error: "Hotel not found" });
+    if (!updatedHotel || !updatedHotel.deals.length) {
+      return res.status(404).json({
+        success: false,
+        error: "Hotel not found or deal not added",
+      });
     }
+
+    const lastDeal = updatedHotel.deals[updatedHotel.deals.length - 1];
 
     res.status(200).json({
       success: true,
       message: "Deal provider added successfully",
-      data: {
-        doc: updatedHotel,
-      },
+      _id: lastDeal._id, // ✅ YOU NEED THIS
+      data: lastDeal,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 }
 
+  
+
+
+
 async function addNewDeal(req, res) {
   try {
-    const {
-      type,
-      pricePerNight,
-      noOfRooms,
-      maxPersonAllowed,
-      freeCancellation,
-      breakfastIncluded,
-      availableFrom,
-      availableTo,
-    } = req.body;
     const { hotelId, dealId } = req.params;
+    const incomingDeals = Array.isArray(req.body) ? req.body : [req.body];
 
-    if (
-      !type ||
-      !pricePerNight ||
-      !noOfRooms ||
-      !maxPersonAllowed ||
-      !availableFrom ||
-      !availableTo
-    ) {
-      return res.status(400).json({
-        success: false,
-        error: "All required fields must be provided",
-      });
-    }
+    const formattedDeals = incomingDeals.map((deal) => ({
+      type: deal.type,
+      pricePerNight: deal.pricePerNight,
+      noOfRooms: deal.noOfRooms || 1,
+      maxPersonAllowed: deal.maxPersonAllowed,
+      freeCancellation: deal.freeCancellation,
+      breakfastIncluded: deal.breakfastIncluded,
+      availableFrom: deal.availableFrom,
+      availableTo: deal.availableTo,
+    }));
 
     const updatedHotel = await HotelModel.findOneAndUpdate(
       { _id: hotelId, "deals._id": dealId },
       {
         $push: {
-          "deals.$.rooms": {
-            type,
-            pricePerNight,
-            noOfRooms,
-            maxPersonAllowed,
-            freeCancellation,
-            breakfastIncluded,
-            availableFrom,
-            availableTo,
-          },
+          "deals.$.rooms": { $each: formattedDeals },
         },
       },
       { new: true }
@@ -662,10 +656,8 @@ async function addNewDeal(req, res) {
 
     res.status(200).json({
       success: true,
-      message: "Room deal added successfully",
-      data: {
-        doc: updatedHotel,
-      },
+      message: "Room deal(s) added successfully",
+      data: updatedHotel,
     });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

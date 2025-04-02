@@ -1,39 +1,41 @@
+import "../utils/cloudinary.mjs";
 import multer from "multer";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import {v2 as cloudinary} from "cloudinary";
+import {CloudinaryStorage} from "multer-storage-cloudinary";
 
-const upload = (uploadPath) => {
-  const storage = multer.diskStorage({
-    destination: (req, file, callback) => {
-      const fullPath = path.join(__dirname, "../public/files", uploadPath);
 
-      // Ensure directory exists or create it
-      if (!fs.existsSync(fullPath)) {
-        fs.mkdirSync(fullPath, { recursive: true });
-      }
 
-      callback(null, fullPath);
-    },
-    filename: (req, file, callback) => {
-      callback(null, `${Date.now()}-${file.originalname}`);
-    },
-  });
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: (req, file) => {
+    const folder = req.body.folder || "misc"; 
 
-  const multerFilter = (req, file, cb) => {
-    const allowedTypes = /\.(jpg|jpeg|png|webp)$/i;
-    if (allowedTypes.test(file.originalname)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Invalid file format"), false);
-    }
-  };
+    return {
+      folder,
+      allowed_formats: ["jpg", "jpeg", "png", "webp"],
+      transformation: [{width: 800, height: 600, crop: "limit"}]
+    };
 
-  return multer({
-    storage: storage,
-    fileFilter: multerFilter,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 5MB limit
-  });
+  },
+});
+
+const multerFilter = (req, file, cb) => {
+  const allowedTypes = /\.(jpg|jpeg|png|webp)$/i;
+  if (allowedTypes.test(file.originalname)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file format"), false);
+  }
 };
+
+// Multer config
+const upload = multer({
+  storage: storage,
+  fileFilter: multerFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
+
 export default upload;
+
+
+

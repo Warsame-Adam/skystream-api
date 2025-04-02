@@ -14,11 +14,11 @@ HotelRouter.route("/recommendedHotels/:id").get(HotelService.getRelatedHotels);
 
 HotelRouter.get("/:id", HotelService.getHotelById);
 
-HotelRouter.use(protect);
+//HotelRouter.use(protect);
 HotelRouter.route("/")
   .delete(HotelService.deleteHotel)
   .post(
-    imageUpload("/hotels").fields([
+    imageUpload.fields([
       { name: "cover", maxCount: 1 },
       { name: "images" },
     ]),
@@ -34,7 +34,7 @@ HotelRouter.post("/new-deal/:hotelId/deals/:dealId", HotelService.addNewDeal);
 
 HotelRouter.patch(
   "/:id",
-  imageUpload("/hotels").fields([
+  imageUpload.fields([
     { name: "cover", maxCount: 1 },
     { name: "images", maxCount: 5 },
   ]),

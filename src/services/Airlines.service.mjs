@@ -38,7 +38,7 @@ async function updateAirline(req, res) {
     const updatedObj = {};
 
     if (name) updatedObj.name = name;
-    if (req?.file?.filename) updatedObj.logo = req.file.filename;
+    if (req?.file?.path) updatedObj.logo = req.file.path;
 
     const doc = await AirlineModel.findByIdAndUpdate(
       req.params.id,
@@ -68,7 +68,7 @@ async function createOne(req, res) {
   try {
     const { name } = req.body;
 
-    const doc = await AirlineModel.create({ name, logo: req.file.filename });
+    const doc = await AirlineModel.create({ name, logo: req.file.path });
     if (!doc)
       return res
         .status(500)

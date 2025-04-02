@@ -1,3 +1,4 @@
+import "./utils/cloudinary.mjs";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -37,12 +38,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname, "public")));
 
 //Allowing Only 100 Request in 1 Hour For '/api'
-const limit = rateLimit({
-  max: 500,
-  windowMs: 60 * 60 * 1000,
-  message: "Too Many Request From this IP.",
-});
-app.use("/api", limit);
+//const limit = rateLimit({
+  //max: 500,
+  //windowMs: 60 * 60 * 1000,
+  //message: "Too Many Request From this IP.",
+//});
+//app.use("/api", limit);
+
 
 // REGISTER ROUTES
 //Routes Middleware
