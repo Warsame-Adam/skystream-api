@@ -1,34 +1,26 @@
 import axios from "axios";
 import dotenv from "dotenv";
-
 import path from "path";
-
 import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
-
-const MONGO_URI = process.env.MONGO_URI;
 import FormData from "form-data";
 import fs from "fs";
-import { addDays, format } from "date-fns";
+import { addDays } from "date-fns";
 import mongoose from "mongoose";
 import FlightModel from "../models/Flight.model.mjs";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+
+const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) {
   console.error("Error: MONGO_URI is not defined in the .env file");
   process.exit(1);
 }
 
-
-
-
-
 const API_URL = "http://localhost:5000/api/flights/dev-flight-123";
 const AUTH_TOKEN = "";
-const DRY_RUN = false; 
+const DRY_RUN = false;
 
 const london = {
   cityId: "67d86558ca8eef732fe21afb",
@@ -106,8 +98,7 @@ function generateFlights() {
   const flights = [];
   let flightNumber = 1000;
   let currentDate = addDays(new Date(), 3);
-  const endDate = currentDate;
-
+  const endDate = addDays(new Date(), 10);
 
   while (currentDate <= endDate) {
     for (const destination of destinations) {

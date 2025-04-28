@@ -132,3 +132,6 @@ dist
 
 # Ignore hotel seed data
 src/hotelBaseData.mjs
+
+#Ignore review pool seed data
+src/reviewPool.mjs

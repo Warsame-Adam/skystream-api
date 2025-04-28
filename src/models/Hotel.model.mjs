@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import validator from "validator";
+
 const hotelSchema = new Schema(
   {
     name: {
@@ -7,6 +8,11 @@ const hotelSchema = new Schema(
       required: [true, "Hotel name is required"],
       trim: true,
     },
+    starRating: {
+      type: Number, // 3, 4, or 5
+      required: true,
+    },
+  
     cover: {
       type: String,
       required: [true, "Hotel Main Image is required"],
@@ -47,6 +53,14 @@ const hotelSchema = new Schema(
             "Coordinates must have exactly two values: [longitude, latitude]",
         },
       },
+      cityCode: {
+        type: String,
+        required: true
+      },
+      countryCode: {
+        type: String,
+        required: true
+      }
     },
     amenities: {
       wifi: {
@@ -107,7 +121,6 @@ const hotelSchema = new Schema(
         required: [true, "Check-out time is required"],
         match: /^([01]\d|2[0-3]):([0-5]\d)$/,
       },
-
       breakfastAvailable: {
         type: Boolean,
         default: true,
@@ -116,12 +129,12 @@ const hotelSchema = new Schema(
       petsAllowed: {
         type: Boolean,
         default: true,
-        required: [true, "Pets allowed in Hotel is required?"],
+        required: [true, "Pets allowed in Hotel is required"],
       },
       kidsAllowed: {
         type: Boolean,
         default: true,
-        required: [true, "Children are welcome at this hotel is required?"],
+        required: [true, "Children are welcome at this hotel is required"],
       },
     },
     otherImportantNotes: {
@@ -168,7 +181,7 @@ const hotelSchema = new Schema(
             {
               type: {
                 type: String,
-                required: [true, "Room Type is required"], //one bed two bed or luxury etc
+                required: [true, "Room Type is required"],
               },
               pricePerNight: {
                 type: Number,
@@ -184,6 +197,18 @@ const hotelSchema = new Schema(
                   true,
                   "Maximum Number of Persons allowed is required",
                 ],
+              },
+              maxAdults: {
+                type: Number,
+                required: [true, "Maximum number of adults is required"],
+              },
+              maxChildren: {
+                type: Number,
+                required: [true, "Maximum number of children is required"],
+              },
+              maxGuests: {
+                type: Number,
+                required: [true, "Maximum number of guests is required"],
               },
               freeCancellation: {
                 type: Boolean,

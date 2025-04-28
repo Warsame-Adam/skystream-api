@@ -231,6 +231,13 @@ async function getFlightsBySearch(req, res) {
       frequency,
       classType,
       vacancy,
+
+      // >>> NEW PARAMS <<<
+      // Pass in ?adults=2&children=1&cabinClass=Business Class (or whatever)
+      // Default to 1 adult, 0 children if not provided
+      adults = 1,
+      children = 0,
+      cabinClass,
     } = req.query;
 
     const filters = {
@@ -261,7 +268,7 @@ async function getFlightsBySearch(req, res) {
       });
     }
 
-    // APPLY FILTERS DYNAMICALLY
+    // --- APPLY ORIGIN FILTERS ---
     if (originCountry && originCity) {
       const departureCity = await LocationModel.findOne({
         countryCode: { $regex: originCountry, $options: "i" },
@@ -279,6 +286,7 @@ async function getFlightsBySearch(req, res) {
       };
     }
 
+    // --- APPLY DESTINATION FILTERS ---
     if (destinationCountry && destinationCity) {
       const arrivalCity = await LocationModel.findOne({
         countryCode: { $regex: destinationCountry, $options: "i" },
@@ -287,6 +295,7 @@ async function getFlightsBySearch(req, res) {
       filters["location.arrivalCity"] = arrivalCity?._id;
     }
 
+    // --- APPLY AIRLINE FILTERS ---
     if (outboundAirline) {
       const outboundAirlineCopy = Array.isArray(outboundAirline)
         ? outboundAirline
@@ -325,11 +334,12 @@ async function getFlightsBySearch(req, res) {
     if (flightNumber) {
       filters.flightNumber = { $regex: flightNumber, $options: "i" };
     }
+
     if (frequency) {
       filters.frequency = { $in: frequency }; // Match any of the specified days
     }
 
-    // Step 6: Apply departureTime and arrivalTime filters
+    // --- APPLY DEPARTURE/ARRIVAL TIME FILTERS ---
     const scheduleFilters = [];
     if (departureTime && arrivalTime) {
       scheduleFilters.push({
@@ -345,13 +355,13 @@ async function getFlightsBySearch(req, res) {
         "schedule.arrivalTime": { $lte: parseDate(arrivalTime) },
       });
     }
-    // Apply schedule filters
     if (scheduleFilters.length) {
       filters["$and"] = filters["$and"]
         ? [...filters["$and"], ...scheduleFilters]
         : scheduleFilters;
     }
 
+    // --- APPLY CLASS FILTER FOR VACANCY (IF PROVIDED) ---
     const classFilters = [];
     if (classType && vacancy) {
       const classTypeDoc = await ClassTypeModel.findOne({
@@ -368,22 +378,65 @@ async function getFlightsBySearch(req, res) {
         });
       }
     }
-    // Apply class filters
     if (classFilters.length) {
       filters["$and"] = filters["$and"]
         ? [...filters["$and"], ...classFilters]
         : classFilters;
     }
-    // FETCH FLIGHTS MATCHING THE FILTERS
+
+    // --- FETCH FLIGHTS MATCHING THE FILTERS ---
     const flights = await FlightModel.find(filters).populate(
       "outboundAirline returnAirline location.departureCity location.arrivalCity location.departureAirport location.arrivalAirport classes.classType location.outboundStops.stopAtCity location.outboundStops.stopAtAirport location.returnStops.stopAtCity location.returnStops.stopAtAirport"
     );
 
-    // SEND RESPONSE WITH FILTERED FLIGHTS
+    // --- NEW: CALCULATE TOTAL PRICE FOR EACH FLIGHT ---
+    const numAdults = parseInt(adults, 10);
+    const numChildren = parseInt(children, 10);
+
+    // We'll map over flights and compute the totalPrice if `cabinClass` is provided
+    const flightResults = flights.map((flight) => {
+      // If no cabinClass given, you might return the flight as-is
+      if (!cabinClass) {
+        // Just return the flight doc so we don't break anything
+        const flightObj = flight.toObject();
+        // Optionally set totalPrice = null or skip it
+        flightObj.totalPrice = null;
+        return flightObj;
+      }
+
+      // Find the specific class object that matches the requested cabinClass name
+      const matchedClass = flight.classes.find(
+        (cls) => cls.classType?.type === cabinClass
+      );
+
+      // If no matching class, we can either return null or skip
+      if (!matchedClass) {
+        return null;
+      }
+
+      // Price from DB is presumably per adult seat
+      const basePrice = matchedClass.price;
+      // Example: 25% discount for children (adjust or remove as needed)
+      const childPrice = basePrice * 0.75;
+
+      const totalPrice =
+        basePrice * numAdults + childPrice * numChildren;
+
+      // Convert the Mongoose doc to a plain object so we can attach totalPrice
+      const flightObj = flight.toObject();
+      flightObj.totalPrice = totalPrice;
+      flightObj.cabinClass = matchedClass.classType.type;
+      return flightObj;
+    });
+
+    // Filter out any flights that returned null (didn’t match the cabin class)
+    const filteredResults = flightResults.filter((f) => f !== null);
+
+    // SEND RESPONSE WITH FILTERED FLIGHTS + totalPrice
     return res.status(200).json({
       success: true,
       data: {
-        doc: flights,
+        doc: filteredResults,
       },
     });
   } catch (error) {

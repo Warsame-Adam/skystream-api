@@ -289,10 +289,31 @@ async function getHotelsBySearch(req, res) {
 
 async function getHotelsStats(req, res) {
   try {
+    const { countryCode, cityCode } = req.query;
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-    const pipeline = [
+    const matchStage = {};
+
+    if (countryCode) {
+      matchStage["location.countryCode"] = {
+        $regex: new RegExp(`^${countryCode}$`, "i"),
+      };
+    }
+    if (cityCode) {
+      matchStage["location.cityCode"] = {
+        $regex: new RegExp(`^${cityCode}$`, "i"),
+      };
+    }
+
+    const pipeline = [];
+
+    // Optional: Global match before $facet if you want to reduce docs early
+    if (Object.keys(matchStage).length > 0) {
+      pipeline.push({ $match: matchStage });
+    }
+
+    pipeline.push(
       {
         $addFields: {
           averageRating: {
@@ -307,6 +328,7 @@ async function getHotelsStats(req, res) {
       {
         $facet: {
           highestRatedHotel: [
+            { $match: matchStage },
             { $sort: { averageRating: -1 } },
             { $limit: 1 },
             {
@@ -317,8 +339,8 @@ async function getHotelsStats(req, res) {
               },
             },
           ],
-
           cheapestMonthToBook: [
+            { $match: matchStage },
             { $unwind: "$deals" },
             { $unwind: "$deals.rooms" },
             {
@@ -348,13 +370,10 @@ async function getHotelsStats(req, res) {
               },
             },
           ],
-
           average4StarPrice: [
-            {
-              $match: {
-                averageRating: { $gte: 4, $lt: 5 },
-              },
-            },
+            { $match: matchStage },
+            { $match: { starRating: 4 } }, 
+
             { $unwind: "$deals" },
             { $unwind: "$deals.rooms" },
             {
@@ -370,13 +389,10 @@ async function getHotelsStats(req, res) {
               },
             },
           ],
-
           average5StarPrice: [
-            {
-              $match: {
-                averageRating: { $gte: 5 },
-              },
-            },
+            { $match: matchStage },
+            { $match: { starRating: 5 } },
+            
             { $unwind: "$deals" },
             { $unwind: "$deals.rooms" },
             {
@@ -393,25 +409,23 @@ async function getHotelsStats(req, res) {
             },
           ],
         },
-      },
-    ];
+      }
+    );
+
     const result = await HotelModel.aggregate(pipeline);
 
     return res.status(200).json({
       success: true,
       data: {
-        doc: {
-          highestRatedHotel: result[0].highestRatedHotel[0] || null,
-          cheapestMonthToBook: result[0].cheapestMonthToBook[0] || {
-            cheapestMonth: 1,
-          },
-          average4StarPrice: result[0].average4StarPrice.length
-            ? result[0].average4StarPrice[0].avg4StarPrice
-            : 0,
-          average5StarPrice: result[0].average5StarPrice.length
-            ? result[0].average5StarPrice[0].avg5StarPrice
-            : 0,
-        },
+        highestRatedHotel: result[0].highestRatedHotel[0] || null,
+        cheapestMonthToBook:
+          result[0].cheapestMonthToBook[0] || { cheapestMonth: 1 },
+        average4StarPrice: result[0].average4StarPrice.length
+          ? result[0].average4StarPrice[0].avg4StarPrice
+          : 0,
+        average5StarPrice: result[0].average5StarPrice.length
+          ? result[0].average5StarPrice[0].avg5StarPrice
+          : 0,
       },
     });
   } catch (error) {
@@ -451,33 +465,29 @@ async function getRelatedHotels(req, res) {
       city: city._id,
       _id: { $ne: hotelId },
     })
-      .limit(9)
+      .limit(3)
       .lean()
       .populate("city");
 
-    // Step 3: Fetch Recommended Hotels (Similar Price, Same Country)
-    const sameCountryLocations = await LocationModel.find({
-      countryCode: city.countryCode,
-    }).select("_id");
+      const similarHotelIds = similarHotelsData.map(h => h._id);
 
-    const recommendedHotels = await HotelModel.find({
-      city: { $in: sameCountryLocations.map((x) => x._id) },
-      "deals.rooms.pricePerNight": priceRange,
-      _id: { $ne: hotelId },
-    })
-      .limit(9)
-      .lean()
-      .populate("city");
+// Step 3: Fetch Recommended Hotels (Similar Price, Same City but exclude similarHotels)
+const recommendedHotels = await HotelModel.find({
+  city: city._id,
+  "deals.rooms.pricePerNight": priceRange,
+  _id: { $nin: [hotelId, ...similarHotelIds] }, // Exclude current hotel + similar hotels
+})
+  .limit(3)
+  .lean()
+  .populate("city");
 
-    // Step 4: Fetch Popular Hotels (Highest Rating in Same Country)
-    const popularHotels = await HotelModel.find({
-      city: { $in: sameCountryLocations.map((x) => x._id) },
-      _id: { $ne: hotelId },
-    })
-      .sort({ "reviews.rating": -1 }) // Sort by highest rating
-      .limit(9)
-      .lean()
-      .populate("city");
+
+    
+   
+
+
+    
+    
 
     res.status(200).json({
       success: true,
@@ -485,7 +495,7 @@ async function getRelatedHotels(req, res) {
         doc: {
           similarHotelsData,
           recommendedHotels,
-          popularHotels,
+          
         },
       },
     });
@@ -618,10 +628,6 @@ async function addNewDealProvider(req, res) {
   }
 }
 
-  
-
-
-
 async function addNewDeal(req, res) {
   try {
     const { hotelId, dealId } = req.params;
@@ -632,10 +638,14 @@ async function addNewDeal(req, res) {
       pricePerNight: deal.pricePerNight,
       noOfRooms: deal.noOfRooms || 1,
       maxPersonAllowed: deal.maxPersonAllowed,
+      maxAdults: deal.maxAdults,
+      maxChildren: deal.maxChildren,
+      maxGuests: deal.maxGuests,
       freeCancellation: deal.freeCancellation,
       breakfastIncluded: deal.breakfastIncluded,
       availableFrom: deal.availableFrom,
       availableTo: deal.availableTo,
+      bookingUrl: deal.bookingUrl, // if you need to save bookingUrl as well
     }));
 
     const updatedHotel = await HotelModel.findOneAndUpdate(
@@ -663,6 +673,11 @@ async function addNewDeal(req, res) {
     res.status(500).json({ success: false, error: error.message });
   }
 }
+  
+
+
+
+
 // * DELETE HOTEL
 async function deleteHotel(req, res) {
   try {
