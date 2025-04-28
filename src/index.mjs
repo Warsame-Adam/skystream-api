@@ -32,9 +32,9 @@ app.options("*", cors());
 app.use(express.json());
 
 //static File
-//we need to change up how __dirname is used for ES6 purposes
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-//now please load my static html and css files for my express app, from my /public directory
+
 app.use(express.static(path.join(__dirname, "public")));
 
 //Allowing Only 100 Request in 1 Hour For '/api'
