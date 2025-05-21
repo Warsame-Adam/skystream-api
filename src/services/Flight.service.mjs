@@ -214,16 +214,23 @@ async function getFlightById(req, res) {
 }
 
 // * GET FLIGHTS BY SEARCH (WITH FILTERS)
-async function getFlightsBySearch(req, res) {
+export async function getFlightsBySearch(req, res) {
   try {
+    // helper to turn epoch or ISO or any date‐string into Date
+    const toDate = val => {
+      if (!val) return null;
+      const n = Number(val);
+      return Number.isFinite(n) ? new Date(n) : new Date(val);
+    };
+
     const {
       oneway,
       originCountry,
       originCity,
       destinationCountry,
       destinationCity,
-      departureTime,
-      arrivalTime,
+      departureTime: rawDep,
+      arrivalTime:   rawArr,
       direct,
       outboundAirline,
       returnAirline,
@@ -231,239 +238,188 @@ async function getFlightsBySearch(req, res) {
       frequency,
       classType,
       vacancy,
-
-      // >>> NEW PARAMS <<<
-      // Pass in ?adults=2&children=1&cabinClass=Business Class (or whatever)
-      // Default to 1 adult, 0 children if not provided
       adults = 1,
       children = 0,
       cabinClass,
     } = req.query;
 
-    const filters = {
-      "schedule.departureTime": { $gte: new Date() },
-    };
+    // also accept the front‐end's "departureDate"/"returnDate"
+    const departureTime = rawDep  ?? req.query.departureDate;
+    const arrivalTime   = rawArr  ?? req.query.returnDate;
 
+    const filters = {};
+
+    // one‐way flag
     if (oneway !== undefined) {
-      filters.twoWay = oneway === "false" || oneway === "false" ? true : false;
+      filters.twoWay = oneway === "false";
     }
 
+    // direct‐flight flag
     if (direct !== undefined) {
-      filters["$and"] = [
-        {
-          "location.outboundDirect":
-            direct === true || direct === "true" ? true : false,
-        },
-      ];
-
-      // If the flight is two-way, ensure return is also direct
-      filters["$and"].push({
-        $or: [
-          { twoWay: false },
-          {
-            "location.returnDirect":
-              direct === true || direct === "true" ? true : false,
-          },
-        ],
-      });
+      const isDirect = direct === "true" || direct === true;
+      filters["location.outboundDirect"] = isDirect;
+      if (oneway === "false") {
+        filters["location.returnDirect"] = isDirect;
+      }
     }
 
-    // --- APPLY ORIGIN FILTERS ---
+    // origin
     if (originCountry && originCity) {
-      const departureCity = await LocationModel.findOne({
-        countryCode: { $regex: originCountry, $options: "i" },
-        cityCode: { $regex: originCity, $options: "i" },
-      }).select("_id");
-
-      filters["location.departureCity"] = departureCity?._id;
+      const depCity = await LocationModel
+        .findOne({ countryCode: { $regex: originCountry, $options: "i" },
+                   cityCode:    { $regex: originCity,    $options: "i" } })
+        .select("_id");
+      if (depCity) filters["location.departureCity"] = depCity._id;
     } else if (originCountry) {
-      const departureCountryCities = await LocationModel.find({
-        countryCode: { $regex: originCountry, $options: "i" },
-      }).select("_id");
-
-      filters["location.departureCity"] = {
-        $in: departureCountryCities.map((doc) => doc._id),
-      };
+      const docs = await LocationModel
+        .find({ countryCode: { $regex: originCountry, $options: "i" } })
+        .select("_id");
+      filters["location.departureCity"] = { $in: docs.map(d => d._id) };
     }
 
-    // --- APPLY DESTINATION FILTERS ---
+    // destination
     if (destinationCountry && destinationCity) {
-      const arrivalCity = await LocationModel.findOne({
-        countryCode: { $regex: destinationCountry, $options: "i" },
-        cityCode: { $regex: destinationCity, $options: "i" },
-      }).select("_id");
-      filters["location.arrivalCity"] = arrivalCity?._id;
+      const arrCity = await LocationModel
+        .findOne({ countryCode: { $regex: destinationCountry, $options: "i" },
+                   cityCode:    { $regex: destinationCity,    $options: "i" } })
+        .select("_id");
+      if (arrCity) filters["location.arrivalCity"] = arrCity._id;
     }
 
-    // --- APPLY AIRLINE FILTERS ---
+    // outbound airline
     if (outboundAirline) {
-      const outboundAirlineCopy = Array.isArray(outboundAirline)
-        ? outboundAirline
-        : [outboundAirline];
-      const outboundAirlineDocs = await AirlineModel.find({
-        name: {
-          $in: outboundAirlineCopy.map((name) => new RegExp(`^${name}$`, "i")),
-        },
-      })
-        .select("_id")
-        .lean();
-      filters["outboundAirline"] = {
-        $in: outboundAirlineDocs.map((doc) => doc._id),
-      };
+      const arr = Array.isArray(outboundAirline) ? outboundAirline : [outboundAirline];
+      const docs = await AirlineModel
+        .find({ name: { $in: arr.map(n => new RegExp(`^${n}$`, "i")) } })
+        .select("_id");
+      filters.outboundAirline = { $in: docs.map(d => d._id) };
     }
 
+    // return airline (force twoWay)
     if (returnAirline) {
-      filters["twoWay"] = true; // Ensure it's a round-trip flight
-      const returnAirlineCopy = Array.isArray(returnAirline)
-        ? returnAirline
-        : [returnAirline];
-
-      const returnAirlineDocs = await AirlineModel.find({
-        name: {
-          $in: returnAirlineCopy.map((name) => new RegExp(`^${name}$`, "i")),
-        },
-      })
-        .select("_id")
-        .lean();
-
-      filters["returnAirline"] = {
-        $in: returnAirlineDocs.map((doc) => doc._id),
-      };
+      filters.twoWay = true;
+      const arr = Array.isArray(returnAirline) ? returnAirline : [returnAirline];
+      const docs = await AirlineModel
+        .find({ name: { $in: arr.map(n => new RegExp(`^${n}$`, "i")) } })
+        .select("_id");
+      filters.returnAirline = { $in: docs.map(d => d._id) };
     }
 
-    if (flightNumber) {
-      filters.flightNumber = { $regex: flightNumber, $options: "i" };
+    // flightNo & frequency
+    if (flightNumber) filters.flightNumber = { $regex: flightNumber, $options: "i" };
+    if (frequency)    filters.frequency    = { $in: frequency };
+
+    // date filters
+    const dateAnd = [];
+
+    if (departureTime) {
+      const start = toDate(departureTime);
+      start.setHours(0,0,0,0);
+      const end = new Date(start);
+      end.setHours(23,59,59,999);
+      dateAnd.push({ "schedule.departureTime": { $gte: start, $lte: end } });
+    } else {
+      // no departure ⇒ only future
+      dateAnd.push({ "schedule.departureTime": { $gte: new Date() } });
     }
 
-    if (frequency) {
-      filters.frequency = { $in: frequency }; // Match any of the specified days
+    // **always** filter return if they passed any returnDate
+    if (arrivalTime) {
+      const start = toDate(arrivalTime);
+      start.setHours(0,0,0,0);
+      const end = new Date(start);
+      end.setHours(23,59,59,999);
+      dateAnd.push({ "schedule.returnDepartureTime": { $gte: start, $lte: end } });
     }
 
-    // --- APPLY DEPARTURE/ARRIVAL TIME FILTERS ---
-    const scheduleFilters = [];
-    if (departureTime && arrivalTime) {
-      scheduleFilters.push({
-        "schedule.departureTime": { $gte: parseDate(departureTime) },
-        "schedule.arrivalTime": { $lte: parseDate(arrivalTime) },
-      });
-    } else if (departureTime) {
-      scheduleFilters.push({
-        "schedule.departureTime": { $gte: parseDate(departureTime) },
-      });
-    } else if (arrivalTime) {
-      scheduleFilters.push({
-        "schedule.arrivalTime": { $lte: parseDate(arrivalTime) },
-      });
-    }
-    if (scheduleFilters.length) {
-      filters["$and"] = filters["$and"]
-        ? [...filters["$and"], ...scheduleFilters]
-        : scheduleFilters;
+    if (dateAnd.length) {
+      filters.$and = filters.$and ? [...filters.$and, ...dateAnd] : dateAnd;
     }
 
-    // --- APPLY CLASS FILTER FOR VACANCY (IF PROVIDED) ---
-    const classFilters = [];
+    // class + vacancy
     if (classType && vacancy) {
-      const classTypeDoc = await ClassTypeModel.findOne({
-        type: classType,
-      }).select("_id");
-      if (classTypeDoc) {
-        classFilters.push({
+      const clsDoc = await ClassTypeModel.findOne({ type: classType }).select("_id");
+      if (clsDoc) {
+        const classCond = {
           classes: {
             $elemMatch: {
-              classType: classTypeDoc._id,
-              vacancy: { $gte: vacancy },
-            },
-          },
-        });
+              classType: clsDoc._id,
+              vacancy:   { $gte: Number(vacancy) },
+            }
+          }
+        };
+        filters.$and = filters.$and ? [...filters.$and, classCond] : [classCond];
       }
     }
-    if (classFilters.length) {
-      filters["$and"] = filters["$and"]
-        ? [...filters["$and"], ...classFilters]
-        : classFilters;
-    }
 
-    // --- FETCH FLIGHTS MATCHING THE FILTERS ---
+    // fetch & populate
     const flights = await FlightModel.find(filters).populate(
-      "outboundAirline returnAirline location.departureCity location.arrivalCity location.departureAirport location.arrivalAirport classes.classType location.outboundStops.stopAtCity location.outboundStops.stopAtAirport location.returnStops.stopAtCity location.returnStops.stopAtAirport"
+      "outboundAirline returnAirline " +
+      "location.departureCity location.arrivalCity " +
+      "location.departureAirport location.arrivalAirport " +
+      "classes.classType " +
+      "location.outboundStops.stopAtCity location.outboundStops.stopAtAirport " +
+      "location.returnStops.stopAtCity location.returnStops.stopAtAirport"
     );
 
-    // --- NEW: CALCULATE TOTAL PRICE FOR EACH FLIGHT ---
-    const numAdults = parseInt(adults, 10);
-    const numChildren = parseInt(children, 10);
+    // price calc
+    const ad = parseInt(adults,  10);
+    const ch = parseInt(children,10);
 
-    // We'll map over flights and compute the totalPrice if `cabinClass` is provided
-    const flightResults = flights.map((flight) => {
-      // If no cabinClass given, you might return the flight as-is
-      if (!cabinClass) {
-        // Just return the flight doc so we don't break anything
-        const flightObj = flight.toObject();
-        // Optionally set totalPrice = null or skip it
-        flightObj.totalPrice = null;
-        return flightObj;
-      }
+    const results = flights
+      .map(f => {
+        if (!cabinClass) {
+          const o = f.toObject();
+          o.totalPrice = null;
+          return o;
+        }
+        const cls = f.classes.find(c => c.classType?.type === cabinClass);
+        if (!cls) return null;
+        const base  = cls.price;
+        const total = base * ad + base * 0.75 * ch;
+        const o = f.toObject();
+        o.totalPrice  = total;
+        o.cabinClass  = cabinClass;
+        return o;
+      })
+      .filter(Boolean);
 
-      // Find the specific class object that matches the requested cabinClass name
-      const matchedClass = flight.classes.find(
-        (cls) => cls.classType?.type === cabinClass
-      );
-
-      // If no matching class, we can either return null or skip
-      if (!matchedClass) {
-        return null;
-      }
-
-      // Price from DB is presumably per adult seat
-      const basePrice = matchedClass.price;
-      // Example: 25% discount for children (adjust or remove as needed)
-      const childPrice = basePrice * 0.75;
-
-      const totalPrice =
-        basePrice * numAdults + childPrice * numChildren;
-
-      // Convert the Mongoose doc to a plain object so we can attach totalPrice
-      const flightObj = flight.toObject();
-      flightObj.totalPrice = totalPrice;
-      flightObj.cabinClass = matchedClass.classType.type;
-      return flightObj;
-    });
-
-    // Filter out any flights that returned null (didn’t match the cabin class)
-    const filteredResults = flightResults.filter((f) => f !== null);
-
-    // SEND RESPONSE WITH FILTERED FLIGHTS + totalPrice
-    return res.status(200).json({
-      success: true,
-      data: {
-        doc: filteredResults,
-      },
-    });
-  } catch (error) {
-    console.error("ERROR FETCHING FLIGHTS BY SEARCH:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "INTERNAL SERVER ERROR" });
+    return res.status(200).json({ success: true, data: { doc: results } });
+  }
+  catch(err) {
+    console.error("ERROR FETCHING FLIGHTS:", err);
+    return res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
+
+
+
+
+
+
+
+
+
 
 async function getCheapestFlightsPerCity(req, res) {
   try {
     let { originCity, originCountry, departureTime } = req.query;
-    if (!departureTime) {
-      departureTime = new Date().toDateString();
-    }
+    departureTime = departureTime ? new Date(departureTime) : new Date();
 
     if (!originCity || !originCountry) {
       return res
         .status(400)
         .json({ success: false, message: "Missing required parameters" });
     }
-    // Step 1: Find Departure City ID
+
+    // 1) find the departureCity._id
     const departureCity = await LocationModel.findOne({
       countryCode: { $regex: originCountry, $options: "i" },
-      cityCode: { $regex: originCity, $options: "i" },
-    }).select("_id");
+      cityCode:    { $regex: originCity,   $options: "i" },
+    })
+      .select("_id")
+      .lean()
+      .exec();
 
     if (!departureCity) {
       return res
@@ -471,54 +427,63 @@ async function getCheapestFlightsPerCity(req, res) {
         .json({ success: false, error: "Origin city not found" });
     }
 
-    // Step 2: Fetch Flights from Origin City on or after the given date
-    const flights = await FlightModel.find({
-      "location.departureCity": departureCity._id,
-      "schedule.departureTime": { $gte: new Date(departureTime) },
-    }).populate(
-      "outboundAirline returnAirline location.departureCity location.arrivalCity location.departureAirport location.arrivalAirport classes.classType location.outboundStops.stopAtCity location.outboundStops.stopAtAirport location.returnStops.stopAtCity location.returnStops.stopAtAirport"
-    );
-
-    // Populate destination city details
-
-    // Step 3: Find cheapest flight per destination city
-    const cheapestFlights = new Map();
-
-    flights.forEach((flight) => {
-      const minClass = flight.classes.reduce(
-        (min, c) => (c.price < min.price ? c : min),
-        {
-          price: Infinity,
+    // 2) aggregation pipeline
+    const pipeline = [
+      { 
+        $match: {
+          "location.departureCity": departureCity._id,
+          "schedule.departureTime": { $gte: departureTime }
         }
-      );
-
-      if (minClass.price === Infinity) return; // Skip if no valid price
-
-      const destinationId = flight.location.arrivalCity._id.toString();
-      if (
-        !cheapestFlights.has(destinationId) ||
-        minClass.price < cheapestFlights.get(destinationId).price
-      ) {
-        cheapestFlights.set(destinationId, { flight, price: minClass.price });
+      },
+      { $unwind: "$classes" },
+      { $sort: { "classes.price": 1 } },
+      { 
+        $group: {
+          _id: "$location.arrivalCity",
+          flightId: { $first: "$_id" }
+        }
       }
-    });
+    ];
 
-    // Step 4: Convert Map to an array of flights
-    const resultFlights = Array.from(cheapestFlights.values()).map(
-      (entry) => entry.flight
-    );
+    // NOTE: use .option() instead of .maxTimeMS()
+    const cheapestFlights = await FlightModel
+      .aggregate(pipeline)
+      .option({ maxTimeMS: 5000 })
+      .exec();
+
+    if (cheapestFlights.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No flights found" });
+    }
+
+    // 3) fetch those cheapest docs with full populate
+    const ids = cheapestFlights.map(f => f.flightId);
+    const docs = await FlightModel.find({ _id: { $in: ids } })
+      .populate(
+        "outboundAirline returnAirline " +
+        "location.departureCity location.arrivalCity " +
+        "location.departureAirport location.arrivalAirport " +
+        "classes.classType " +
+        "location.outboundStops.stopAtCity location.outboundStops.stopAtAirport " +
+        "location.returnStops.stopAtCity location.returnStops.stopAtAirport"
+      )
+      .lean()
+      .exec();
 
     return res.status(200).json({
       success: true,
-      data: {
-        doc: resultFlights,
-      },
+      data: { doc: docs },
     });
-  } catch (error) {
-    console.error("ERROR FETCHING FLIGHTS:", error);
-    res.status(500).json({ success: false, error: "INTERNAL SERVER ERROR" });
+
+  } catch (err) {
+    console.error("ERROR FETCHING CHEAPEST FLIGHTS:", err);
+    return res
+      .status(500)
+      .json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
+
 
 const FlightService = {
   deleteFlight,

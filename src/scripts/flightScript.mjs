@@ -1,29 +1,37 @@
-import axios from "axios";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import FormData from "form-data";
 import fs from "fs";
 import { addDays } from "date-fns";
 import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
+import "../utils/cloudinary.mjs";
 import FlightModel from "../models/Flight.model.mjs";
 
+////////////////////////////////////////////////////////////////////////////////
+// CONFIG & CONSTANTS
+////////////////////////////////////////////////////////////////////////////////
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 const MONGO_URI = process.env.MONGO_URI;
-if (!MONGO_URI) {
-  console.error("Error: MONGO_URI is not defined in the .env file");
-  process.exit(1);
-}
+if (!MONGO_URI) throw new Error("MONGO_URI missing in .env");
 
-const API_URL = "http://localhost:5000/api/flights/dev-flight-123";
-const AUTH_TOKEN = "";
-const DRY_RUN = false;
+// how far out we seed (days from today)…
+const START_OFFSET_DAYS = 3;
+// window size in days
+const WINDOW_DAYS       = 30;
+// how many variants per combo
+const FLIGHTS_PER_COMBO = 3;
+// chance each leg is direct
+const DIRECT_PROBABILITY = 0.7;
 
+////////////////////////////////////////////////////////////////////////////////
+// YOUR DATA (add all of your destinations here!)
+////////////////////////////////////////////////////////////////////////////////
 const london = {
-  cityId: "67d86558ca8eef732fe21afb",
+  cityId:    "67d86558ca8eef732fe21afb",
   airportId: "67dadaa4018d2d8b18e763e3",
 };
 
@@ -43,18 +51,10 @@ const destinations = [
 ];
 
 const flightDurationsFromLHR = {
-  dubai: 6.83,
-  rome: 2.5,
-  edinburgh: 1.5,
-  amsterdam: 1.33,
-  istanbul: 3.75,
-  cardiff: 1,
-  dublin: 1.33,
-  antalya: 4.25,
-  sydney: 21,
-  bangkok: 11.42,
-  athens: 3.67,
-  paris: 1.25,
+  dubai:    6.83, rome:    2.5,   edinburgh: 1.5,
+  amsterdam:1.33, istanbul:3.75,  cardiff:   1,
+  dublin:   1.33, antalya: 4.25,  sydney:   21,
+  bangkok: 11.42, athens:  3.67,  paris:    1.25,
 };
 
 const airlineIds = [
@@ -68,255 +68,230 @@ const airlineIds = [
 ];
 
 const classTypes = [
-  { classTypeId: "67cb7922d426a160e0cd6fa0", label: "Economy", min: 80, max: 150, vacancy: 20 },
-  { classTypeId: "67cb79dfd13e0b5f35b14795", label: "Premium", min: 200, max: 350, vacancy: 30 },
-  { classTypeId: "67cb79ead13e0b5f35b14799", label: "Business", min: 400, max: 600, vacancy: 15 },
-  { classTypeId: "67cb79f4d13e0b5f35b1479d", label: "First", min: 650, max: 900, vacancy: 10 },
+  { classTypeId: "67cb7922d426a160e0cd6fa0", label:"Economy", min:  80, max: 150, vacancy:20 },
+  { classTypeId: "67cb79dfd13e0b5f35b14795", label:"Premium", min: 200, max: 350, vacancy:30 },
+  { classTypeId: "67cb79ead13e0b5f35b14799", label:"Business",min: 400, max: 600, vacancy:15 },
+  { classTypeId: "67cb79f4d13e0b5f35b1479d",  label:"First",   min: 650, max: 900, vacancy:10 },
 ];
 
-function randomTime(startHour = 6, endHour = 20) {
-  const hour = Math.floor(Math.random() * (endHour - startHour + 1)) + startHour;
-  const minute = [0, 15, 30, 45][Math.floor(Math.random() * 4)];
-  return { hour, minute };
+////////////////////////////////////////////////////////////////////////////////
+// HELPERS
+////////////////////////////////////////////////////////////////////////////////
+const randInt   = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const random    = arr => arr[randInt(0, arr.length - 1)];
+const minNights = hrs => hrs <= 2 ? 1 : hrs <= 5 ? 2 : 3;
+const daysOfWeek = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+////////////////////////////////////////////////////////////////////////////////
+// UPLOAD IMAGES
+////////////////////////////////////////////////////////////////////////////////
+const imgCache = {};
+async function uploadCityImages() {
+  for (const dest of destinations) {
+    const local = `./src/public/files/flights/${dest.name}.png`;
+    if (!fs.existsSync(local)) {
+      throw new Error(`Missing image file: ${local}`);
+    }
+    const { secure_url } = await cloudinary.uploader.upload(local, {
+      folder:    "flights",
+      public_id: dest.name,
+      overwrite: false,
+    });
+    imgCache[dest.name] = secure_url;
+  }
 }
 
-function getRandomStop(excludeIds) {
-  const options = destinations.filter(dest => !excludeIds.includes(dest.cityId));
-  return options[Math.floor(Math.random() * options.length)];
-}
 
-function getRandomFrequency() {
-  const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  return allDays.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 2);
-}
-
-function generatePrice(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
+////////////////////////////////////////////////////////////////////////////////
+// GENERATE FLIGHTS
+////////////////////////////////////////////////////////////////////////////////
 function generateFlights() {
   const flights = [];
-  let flightNumber = 1000;
-  let currentDate = addDays(new Date(), 3);
-  const endDate = addDays(new Date(), 10);
+  let seq = 1000;
 
-  while (currentDate <= endDate) {
-    for (const destination of destinations) {
-      const numFlightsToday = 3;
+  const startDate = addDays(new Date(), START_OFFSET_DAYS);
+  const endDate   = addDays(startDate, WINDOW_DAYS - 1);
 
-      for (let i = 0; i < numFlightsToday; i++) {
-        const useSameAirline = Math.random() < 0.8;
-        const outboundAirline = airlineIds[Math.floor(Math.random() * airlineIds.length)];
-        const returnAirline = useSameAirline ? outboundAirline : airlineIds[Math.floor(Math.random() * airlineIds.length)];
+  for (let dep = new Date(startDate); dep <= endDate; dep = addDays(dep, 1)) {
+    const depName = daysOfWeek[dep.getDay()];
 
-        const isTwoWay = Math.random() < 0.7;
-        const outboundDirect = Math.random() < 0.7;
-        const returnDirect = isTwoWay ? Math.random() < 0.7 : undefined;
+    for (const dest of destinations) {
+      const dur = flightDurationsFromLHR[dest.name];
 
-        const { hour: depHour, minute: depMin } = randomTime();
-        const departure = new Date(currentDate.setHours(depHour, depMin));
-
-        let baseDuration = flightDurationsFromLHR[destination.name.toLowerCase()] || 4;
-        if (!outboundDirect) baseDuration += 2;
-        const arrival = new Date(departure.getTime() + baseDuration * 60 * 60 * 1000);
-
-        const returnDeparture = isTwoWay ? new Date(departure.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
-        let returnArrival = null;
-        if (isTwoWay) {
-          let returnDuration = baseDuration;
-          if (returnDirect === false) returnDuration += 2;
-          returnArrival = new Date(returnDeparture.getTime() + returnDuration * 60 * 60 * 1000);
-        }
-
-        const extraClasses = classTypes.filter(c => c.label !== "Economy");
-        const selectedExtras = extraClasses.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3));
-        const selectedClasses = [
-          {
-            classTypeId: classTypes[0].classTypeId,
-            price: generatePrice(classTypes[0].min, classTypes[0].max),
-            vacancy: classTypes[0].vacancy,
-          },
-          ...selectedExtras.map(c => ({
-            classTypeId: c.classTypeId,
-            price: generatePrice(c.min, c.max),
-            vacancy: c.vacancy,
-          }))
-        ];
-
-        const randomFreq = getRandomFrequency();
+      // 1) ONE-WAY flights
+      for (let i = 0; i < FLIGHTS_PER_COMBO; i++) {
+        const outboundDirect = Math.random() < DIRECT_PROBABILITY;
+        const outAir = random(airlineIds);
+        const departure = new Date(dep);
+        departure.setHours(randInt(6,20), [0,15,30,45][randInt(0,3)],0,0);
+        const arrival = new Date(
+          departure.getTime() + (dur + (outboundDirect?0:2)) * 3600000
+        );
 
         const flight = {
-          flightNumber: `SKY-${flightNumber++}`,
-          outboundAirline,
-          returnAirline: isTwoWay ? returnAirline : undefined,
-          twoWay: isTwoWay,
+          flightNumber:    `SKY-${seq++}`,
+          outboundAirline: outAir,
+          twoWay:          false,
           location: {
-            outboundDirect,
-            returnDirect,
-            departureCity: london.cityId,
+            departureCity:    london.cityId,
             departureAirport: london.airportId,
-            arrivalCity: destination.cityId,
-            arrivalAirport: destination.airportId,
+            arrivalCity:      dest.cityId,
+            arrivalAirport:   dest.airportId,
+            outboundDirect,
           },
           schedule: {
-            departureTime: departure.toISOString(),
-            arrivalTime: arrival.toISOString(),
-            returnDepartureTime: isTwoWay ? returnDeparture.toISOString() : undefined,
-            returnArrivalTime: isTwoWay ? returnArrival.toISOString() : undefined,
+            departureTime: departure,
+            arrivalTime:   arrival,
           },
-          frequency: randomFreq,
-          classes: selectedClasses,
-          destinationName: destination.name,
+          frequency:       [depName],
+          classes: [
+            {
+              classType: classTypes[0].classTypeId,
+              price:     randInt(classTypes[0].min, classTypes[0].max),
+              vacancy:   classTypes[0].vacancy,
+            },
+            ...classTypes
+              .filter(c => c.label!=="Economy")
+              .sort(() => 0.5-Math.random())
+              .slice(0, randInt(0,2))
+              .map(c=>({
+                classType:c.classTypeId,
+                price:    randInt(c.min,c.max),
+                vacancy:  c.vacancy,
+              }))
+          ],
+          image:           imgCache[dest.name],
+          destinationName: dest.name,
+          selfTransfer:    false,
+          externalURL:     "http://booking.com",
+          additionalInfo:  "Auto-generated flight",
         };
 
         if (!outboundDirect) {
-          const stop = getRandomStop([london.cityId, destination.cityId]);
-          flight.location.outboundStops = [{ stopAtCity: stop.cityId, stopAtAirport: stop.airportId }];
-        }
-        if (isTwoWay && returnDirect === false) {
-          const stop = getRandomStop([london.cityId, destination.cityId]);
-          flight.location.returnStops = [{ stopAtCity: stop.cityId, stopAtAirport: stop.airportId }];
+          const stop = random(
+            destinations.filter(d=>d.cityId!==london.cityId&&d.cityId!==dest.cityId)
+          );
+          flight.location.outboundStops = [{
+            stopAtCity:    stop.cityId,
+            stopAtAirport: stop.airportId,
+          }];
         }
 
         flights.push(flight);
       }
+
+      // 2) TWO-WAY flights: ALWAYS generate for every valid return day
+      const earliestReturn = minNights(dur);
+      for (let gap = earliestReturn; ; gap++) {
+        const rtnDay = addDays(dep, gap);
+        if (rtnDay > endDate) break;
+        const rtnName = daysOfWeek[rtnDay.getDay()];
+
+        for (let i = 0; i < FLIGHTS_PER_COMBO; i++) {
+          const outboundDirect = Math.random() < DIRECT_PROBABILITY;
+          const returnDirect   = Math.random() < DIRECT_PROBABILITY;
+          const outAir         = random(airlineIds);
+          const rtnAir         = Math.random()<0.8?outAir:random(airlineIds);
+
+          // outbound
+          const departure = new Date(dep);
+          departure.setHours(randInt(6,20), [0,15,30,45][randInt(0,3)],0,0);
+          const arrival = new Date(
+            departure.getTime() + (dur + (outboundDirect?0:2)) * 3600000
+          );
+          // return
+          const rtnDep = new Date(rtnDay);
+          rtnDep.setHours(randInt(6,20), [0,15,30,45][randInt(0,3)],0,0);
+          const rtnArr = new Date(
+            rtnDep.getTime() + (dur + (returnDirect?0:2)) * 3600000
+          );
+
+          const flight = {
+            flightNumber:     `SKY-${seq++}`,
+            outboundAirline:  outAir,
+            returnAirline:    rtnAir,
+            twoWay:           true,
+            location: {
+              departureCity:    london.cityId,
+              departureAirport: london.airportId,
+              arrivalCity:      dest.cityId,
+              arrivalAirport:   dest.airportId,
+              outboundDirect,
+              returnDirect,
+            },
+            schedule: {
+              departureTime:      departure,
+              arrivalTime:        arrival,
+              returnDepartureTime:rtnDep,
+              returnArrivalTime:  rtnArr,
+            },
+            frequency:       [depName, rtnName],
+            classes: [
+              {
+                classType: classTypes[0].classTypeId,
+                price:     randInt(classTypes[0].min, classTypes[0].max),
+                vacancy:   classTypes[0].vacancy,
+              },
+              ...classTypes
+                .filter(c=>c.label!=="Economy")
+                .sort(()=>0.5-Math.random())
+                .slice(0,randInt(0,2))
+                .map(c=>({
+                  classType:c.classTypeId,
+                  price:    randInt(c.min,c.max),
+                  vacancy:  c.vacancy,
+                }))
+            ],
+            image:           imgCache[dest.name],
+            destinationName: dest.name,
+            selfTransfer:    false,
+            externalURL:     "http://booking.com",
+            additionalInfo:  "Auto-generated flight",
+          };
+
+          if (!outboundDirect) {
+            const stop = random(
+              destinations.filter(d=>d.cityId!==london.cityId&&d.cityId!==dest.cityId)
+            );
+            flight.location.outboundStops = [{
+              stopAtCity:    stop.cityId,
+              stopAtAirport: stop.airportId,
+            }];
+          }
+          if (!returnDirect) {
+            const stop = random(
+              destinations.filter(d=>d.cityId!==dest.cityId&&d.cityId!==london.cityId)
+            );
+            flight.location.returnStops = [{
+              stopAtCity:    stop.cityId,
+              stopAtAirport: stop.airportId,
+            }];
+          }
+
+          flights.push(flight);
+        }
+      }
     }
-    currentDate = addDays(currentDate, 1);
   }
+
   return flights;
 }
 
-async function createFlight(flight) {
-  console.log("🟢 Starting createFlight for:", flight.flightNumber);
+////////////////////////////////////////////////////////////////////////////////
+// MAIN
+////////////////////////////////////////////////////////////////////////////////
+;(async () => {
+  console.log("Uploading city images…");
+  await uploadCityImages();
 
-  const form = new FormData();
+  console.log("Generating flights…");
+  const docs = generateFlights();
+  console.log(`✅ Generated ${docs.length} flights`);
 
-  console.log("🟢 About to append image:", `./src/public/files/flights/${flight.destinationName}`);
-  form.append("folder", "flights");
-  const imagePath = `./src/public/files/flights/${flight.destinationName.toLowerCase()}.png`;
-  form.append("image", fs.createReadStream(imagePath));
+  await mongoose.connect(MONGO_URI, { useNewUrlParser:true, useUnifiedTopology:true });
+  await FlightModel.deleteMany({ "schedule.departureTime": { $lt: new Date() } });
+  await FlightModel.insertMany(docs, { ordered: false });
+  await mongoose.disconnect();
 
-  console.log("🟢 Appended image successfully");
-
-  console.log("🟢 OutboundAirline:", flight.outboundAirline);
-  form.append("outboundAirline", flight.outboundAirline);
-
-  console.log("🟢 twoWay:", flight.twoWay);
-  form.append("twoWay", flight.twoWay.toString());
-
-  if (flight.twoWay) {
-    console.log("🟢 returnAirline:", flight.returnAirline);
-    form.append("returnAirline", flight.returnAirline);
-  }
-
-  console.log("🟢 flightNumber:", flight.flightNumber);
-  form.append("flightNumber", flight.flightNumber);
-
-  console.log("🟢 Location object:", flight.location);
-  Object.entries(flight.location).forEach(([key, value]) => {
-    console.log("🔸 location key:", key, "value:", value);
-  
-    if (Array.isArray(value)) {
-      value.forEach((v, i) => {
-        console.log("   🔸 array index:", i, "value:", v);
-        Object.entries(v).forEach(([subKey, subVal]) => {
-          console.log("     🔹 subVal about to append:", subKey, subVal);
-  
-          
-          if (typeof subVal === "boolean") {
-            subVal = subVal.toString();
-          }
-  
-          if (typeof subVal !== "string") {
-            console.log("❌ Non-string location subVal detected:", subVal);
-          }
-  
-          form.append(`location[${key}][${i}][${subKey}]`, subVal);
-        });
-      });
-    } else if (value !== undefined) {
-      console.log("🔸 appending single location value:", key, "=", value);
-  
-      
-      if (typeof value === "boolean") {
-        value = value.toString();
-      }
-  
-      if (typeof value !== "string") {
-        console.log("❌ Non-string location value detected:", value);
-      }
-  
-      form.append(`location[${key}]`, value);
-    }
-  });
-
-  console.log("🟢 Schedule:", flight.schedule);
-  Object.entries(flight.schedule).forEach(([key, value]) => {
-    console.log("🔸 schedule.", key, "=", value);
-    if (value) form.append(`schedule[${key}]`, value);
-  });
-
-  console.log("🟢 Frequency:", flight.frequency);
-  flight.frequency.forEach((day, i) => {
-    console.log("🔸 frequency.", i, "=", day);
-    form.append(`frequency[${i}]`, day);
-  });
-
-  console.log("🟢 Classes:", flight.classes);
-  flight.classes.forEach((cls, i) => {
-    console.log(`🔸 classes[${i}]:`, cls);
-    form.append(`classes[${i}][classType]`, cls.classTypeId);
-    console.log(`🟢 appended classType ${cls.classTypeId}`);
-
-    console.log(`🟢 appended price ${cls.price}`);
-    form.append(`classes[${i}][price]`, cls.price.toString());
-
-    console.log(`🟢 appended vacancy ${cls.vacancy}`);
-    form.append(`classes[${i}][vacancy]`, cls.vacancy.toString());
-  });
-
-  console.log("🟢 appending selfTransfer, externalURL, additionalInfo...");
-  form.append("selfTransfer", "false");
-  form.append("externalURL", "http://booking.com");
-  form.append("additionalInfo", "Auto-generated flight");
-
-  console.log("🟢 Done building form data for:", flight.flightNumber);
-
-
-  try {
-    const res = await axios.post(API_URL, form, {
-      headers: {
-        ...form.getHeaders(),
-        Authorization: `Bearer ${AUTH_TOKEN}`,
-      },
-    });
-    console.log(`✅ Created flight ${flight.flightNumber}`);
-  } catch (err) {
-    console.error(`❌ Failed flight ${flight.flightNumber}`, err.response?.data || err.message);
-  }
-}
-
-(async () => {
-    await mongoose.connect(MONGO_URI  ,{
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      });
-      
-  const flights = generateFlights();
-
-  if (DRY_RUN) {
-    console.log("🔍 DRY RUN MODE: Showing sample flights to be uploaded...");
-    console.log(flights.slice(0, 3));
-    console.log(`✈️ Total flights generated: ${flights.length}`);
-  } else {
-    console.log("⏳ Deleting expired flights...");
-    await FlightModel.deleteMany({ "schedule.departureTime": { $lt: new Date() } });
-    console.log("✅ Old flights removed");
-
-    for (let flight of flights) {
-      await createFlight(flight);
-    }
-  }
-
-  mongoose.disconnect();
+  console.log("🏁 Seed complete");
 })();
