@@ -8,9 +8,7 @@ import { v2 as cloudinary } from "cloudinary";
 import "../utils/cloudinary.mjs";
 import FlightModel from "../models/Flight.model.mjs";
 
-////////////////////////////////////////////////////////////////////////////////
-// CONFIG & CONSTANTS
-////////////////////////////////////////////////////////////////////////////////
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
@@ -18,18 +16,16 @@ dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) throw new Error("MONGO_URI missing in .env");
 
-// how far out we seed (days from today)…
+
 const START_OFFSET_DAYS = 3;
-// window size in days
+
 const WINDOW_DAYS       = 30;
-// how many variants per combo
+
 const FLIGHTS_PER_COMBO = 3;
-// chance each leg is direct
+
 const DIRECT_PROBABILITY = 0.7;
 
-////////////////////////////////////////////////////////////////////////////////
-// YOUR DATA (add all of your destinations here!)
-////////////////////////////////////////////////////////////////////////////////
+
 const london = {
   cityId:    "67d86558ca8eef732fe21afb",
   airportId: "67dadaa4018d2d8b18e763e3",
@@ -74,17 +70,13 @@ const classTypes = [
   { classTypeId: "67cb79f4d13e0b5f35b1479d",  label:"First",   min: 650, max: 900, vacancy:10 },
 ];
 
-////////////////////////////////////////////////////////////////////////////////
-// HELPERS
-////////////////////////////////////////////////////////////////////////////////
+
 const randInt   = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const random    = arr => arr[randInt(0, arr.length - 1)];
 const minNights = hrs => hrs <= 2 ? 1 : hrs <= 5 ? 2 : 3;
 const daysOfWeek = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
-////////////////////////////////////////////////////////////////////////////////
-// UPLOAD IMAGES
-////////////////////////////////////////////////////////////////////////////////
+
 const imgCache = {};
 async function uploadCityImages() {
   for (const dest of destinations) {
@@ -102,9 +94,7 @@ async function uploadCityImages() {
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// GENERATE FLIGHTS
-////////////////////////////////////////////////////////////////////////////////
+
 function generateFlights() {
   const flights = [];
   let seq = 1000;
@@ -118,7 +108,7 @@ function generateFlights() {
     for (const dest of destinations) {
       const dur = flightDurationsFromLHR[dest.name];
 
-      // 1) ONE-WAY flights
+      
       for (let i = 0; i < FLIGHTS_PER_COMBO; i++) {
         const outboundDirect = Math.random() < DIRECT_PROBABILITY;
         const outAir = random(airlineIds);
@@ -180,7 +170,7 @@ function generateFlights() {
         flights.push(flight);
       }
 
-      // 2) TWO-WAY flights: ALWAYS generate for every valid return day
+      
       const earliestReturn = minNights(dur);
       for (let gap = earliestReturn; ; gap++) {
         const rtnDay = addDays(dep, gap);
@@ -193,13 +183,13 @@ function generateFlights() {
           const outAir         = random(airlineIds);
           const rtnAir         = Math.random()<0.8?outAir:random(airlineIds);
 
-          // outbound
+          
           const departure = new Date(dep);
           departure.setHours(randInt(6,20), [0,15,30,45][randInt(0,3)],0,0);
           const arrival = new Date(
             departure.getTime() + (dur + (outboundDirect?0:2)) * 3600000
           );
-          // return
+        
           const rtnDep = new Date(rtnDay);
           rtnDep.setHours(randInt(6,20), [0,15,30,45][randInt(0,3)],0,0);
           const rtnArr = new Date(
@@ -277,9 +267,7 @@ function generateFlights() {
   return flights;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// MAIN
-////////////////////////////////////////////////////////////////////////////////
+
 ;(async () => {
   console.log("Uploading city images…");
   await uploadCityImages();

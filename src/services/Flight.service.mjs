@@ -26,8 +26,7 @@ async function deleteFlight(req, res) {
 
 // * ADD A NEW FLIGHT
 async function addFlight(req, res) {
-  console.log("📦 req.body:", req.body);
-  console.log("🖼️ req.file:", req.file);
+  
   try {
     let flightData = req.body;
     if (req?.file?.path) flightData.image = req.file.path;
@@ -445,7 +444,7 @@ async function getCheapestFlightsPerCity(req, res) {
       }
     ];
 
-    // NOTE: use .option() instead of .maxTimeMS()
+    
     const cheapestFlights = await FlightModel
       .aggregate(pipeline)
       .option({ maxTimeMS: 5000 })
@@ -483,6 +482,14 @@ async function getCheapestFlightsPerCity(req, res) {
       .json({ success: false, error: "INTERNAL SERVER ERROR" });
   }
 }
+
+
+
+
+
+
+
+
 
 
 const FlightService = {
